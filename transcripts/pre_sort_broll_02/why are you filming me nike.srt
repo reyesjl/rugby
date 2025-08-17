@@ -1,0 +1,36 @@
+1
+00:00:00,000 --> 00:00:03,000
+It's my brother, Julien. Julien's Casey.
+
+2
+00:00:03,000 --> 00:00:04,000
+I'm Casey. Nice to meet you.
+
+3
+00:00:04,000 --> 00:00:05,000
+I'm Kaylee.
+
+4
+00:00:05,000 --> 00:00:06,000
+Did you sign up to play rugby ball?
+
+5
+00:00:06,000 --> 00:00:07,000
+Yeah.
+
+6
+00:00:07,000 --> 00:00:08,000
+Hannibal won.
+
+7
+00:00:09,000 --> 00:00:10,000
+Sign it. Don't take it.
+
+8
+00:00:10,000 --> 00:00:11,000
+You're running, bro.
+
+9
+00:00:11,000 --> 00:00:12,000
+Why are you stealing it?
+

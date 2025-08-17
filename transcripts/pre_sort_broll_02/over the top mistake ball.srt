@@ -1,0 +1,16 @@
+1
+00:00:00,000 --> 00:00:03,000
+It's basically honey, but like, stale.
+
+2
+00:00:03,000 --> 00:00:05,000
+Yeah, that's just honey.
+
+3
+00:00:05,000 --> 00:00:08,000
+It's just honey, but like, a little bit stale.
+
+4
+00:00:08,000 --> 00:00:11,000
+Yeah, try and give me an example.
+

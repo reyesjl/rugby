@@ -1,0 +1,16 @@
+1
+00:00:00,000 --> 00:00:14,000
+This is Judiciary Square.
+
+2
+00:00:14,000 --> 00:00:17,000
+Your attention please.
+
+3
+00:00:17,000 --> 00:00:25,000
+This train is holding due to a traffic problem and we will move upon direction from the Rail Control Center.
+
+4
+00:00:30,000 --> 00:00:33,000
+Thank you.
+

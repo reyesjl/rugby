@@ -1,0 +1,12 @@
+1
+00:00:00,000 --> 00:00:03,560
+Go to the center of the car.
+
+2
+00:00:04,200 --> 00:00:06,920
+Next stop is DuPont Circle.
+
+3
+00:00:06,920 --> 00:00:08,500
+Thank you.
+

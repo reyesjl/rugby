@@ -1,0 +1,32 @@
+1
+00:00:00,000 --> 00:00:02,000
+They passed the point guard!
+
+2
+00:00:09,000 --> 00:00:11,000
+Danger, danger, danger.
+
+3
+00:00:11,000 --> 00:00:13,000
+That was a hell of a chase.
+
+4
+00:00:13,000 --> 00:00:15,000
+Can you guys go to the next round?
+
+5
+00:00:15,000 --> 00:00:16,000
+No!
+
+6
+00:00:16,000 --> 00:00:18,000
+Okay, we're gonna chase you.
+
+7
+00:00:18,000 --> 00:00:20,000
+You're gonna get hurt.
+
+8
+00:00:22,000 --> 00:00:25,000
+Okay, three, two, one, chase!
+

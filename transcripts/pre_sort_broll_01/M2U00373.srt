@@ -1,0 +1,12 @@
+1
+00:00:00,000 --> 00:00:03,360
+The next stop is Cleveland Park.
+
+2
+00:00:03,360 --> 00:00:06,240
+Please step back, the door is closing.
+
+3
+00:00:30,000 --> 00:00:35,480
+Thank you for watching.
+

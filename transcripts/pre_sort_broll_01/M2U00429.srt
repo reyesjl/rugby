@@ -1,0 +1,4 @@
+1
+00:00:00,000 --> 00:00:03,520
+And you'll see it says rec when it's recording and if it's
+

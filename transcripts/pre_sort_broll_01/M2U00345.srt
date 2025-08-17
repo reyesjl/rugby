@@ -1,0 +1,24 @@
+1
+00:00:00,000 --> 00:00:02,000
+What kind of space is in this corner?
+
+2
+00:00:02,000 --> 00:00:05,000
+You should put a full-length mirror in your house.
+
+3
+00:00:05,000 --> 00:00:06,000
+I have one.
+
+4
+00:00:06,000 --> 00:00:07,000
+I don't know if I believe you.
+
+5
+00:00:07,000 --> 00:00:08,000
+Why would you do that?
+
+6
+00:00:12,000 --> 00:00:13,000
+Oh, great.
+

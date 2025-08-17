@@ -1,0 +1,65 @@
+{
+  "sequence_title": "Auto sequence for: Create a 20s hype reel of best tackles",
+  "total_estimated_duration": "00:00:30",
+  "purpose": "Basic auto-generated sequence (no AI available)",
+  "clips": [
+    {
+      "clip_id": 0,
+      "file": "tuesday_session_08_06_2025_mp4/M2U00032.mp4",
+      "start_time": "00:00:00,000",
+      "end_time": "00:00:04,000",
+      "reason": "Auto-selected from first segment",
+      "transition_note": "Straight cut",
+      "priority": "medium"
+    },
+    {
+      "clip_id": 1,
+      "file": "tuesday_session_08_06_2025_mp4/M2U00008.mp4",
+      "start_time": "00:00:00,000",
+      "end_time": "00:00:12,440",
+      "reason": "Auto-selected from first segment",
+      "transition_note": "Straight cut",
+      "priority": "medium"
+    },
+    {
+      "clip_id": 2,
+      "file": "tuesday_session_08_06_2025_mp4/M2U00028.mp4",
+      "start_time": "00:00:01,000",
+      "end_time": "00:00:02,000",
+      "reason": "Auto-selected from first segment",
+      "transition_note": "Straight cut",
+      "priority": "medium"
+    },
+    {
+      "clip_id": 3,
+      "file": "tuesday_session_08_06_2025_mp4/M2U00016.mp4",
+      "start_time": "00:00:00,000",
+      "end_time": "00:00:03,280",
+      "reason": "Auto-selected from first segment",
+      "transition_note": "Straight cut",
+      "priority": "medium"
+    },
+    {
+      "clip_id": 4,
+      "file": "tuesday_session_08_06_2025_mp4/M2U00031.mp4",
+      "start_time": "00:00:00,000",
+      "end_time": "00:00:01,000",
+      "reason": "Auto-selected from first segment",
+      "transition_note": "Straight cut",
+      "priority": "medium"
+    }
+  ],
+  "editing_notes": [
+    "Review and adjust timing as needed"
+  ],
+  "metadata": {
+    "generated_at": "2025-08-08T04:11:27.075345",
+    "generation_method": "basic_fallback",
+    "source_clips_count": 8
+  },
+  "generated_at": "2025-08-08T04:11:27.075358",
+  "original_prompt": "Create a 20s hype reel of best tackles",
+  "context_folders": [
+    "tuesday_session_08_06_2025_mp4"
+  ]
+}
