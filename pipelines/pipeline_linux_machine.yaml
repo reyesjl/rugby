@@ -1,0 +1,20 @@
+video_processing:  
+  sources:  
+    - type: "linux_desktop"  
+      path: "/home/benn/CODE/RUGBY/rugby/input_data/08182025"  
+      watch_patterns: ["*.MPG", "*.mpg"]  
+        
+  conversion:  
+    ffmpeg:  
+      video_codec: "libx264"  
+      crf: 23  
+      preset: "fast"  
+      audio_codec: "aac"  
+      audio_bitrate: "128k"  
+    parallel_workers: 4  
+      
+  indexing:  
+    ai_provider: "openai"  
+    model: "gpt-4o-mini"  
+    batch_size: 10
+

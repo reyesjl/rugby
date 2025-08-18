@@ -3,6 +3,7 @@
 import argparse
 import sys
 from typing import Optional
+from core.pipeline_models import VideoProcessingConfig
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -12,15 +13,11 @@ def create_parser() -> argparse.ArgumentParser:
         description="Rugby video processing pipeline CLI",
     )
     
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
-    # Version command
-    version_parser = subparsers.add_parser("version", help="Show version")
-    version_parser.set_defaults(func=cmd_version)
-    
-    # Status command  
-    status_parser = subparsers.add_parser("status", help="Show pipeline status")
-    status_parser.set_defaults(func=cmd_status)
+    parser.add_argument(
+        "--config",
+        required=True,
+        help="Launch Provided Pipeline",
+    )
     
     return parser
 
@@ -37,17 +34,31 @@ def cmd_status(args: argparse.Namespace) -> int:
     print("✅ All packages initialized")
     return 0
 
+def load_yaml(config_path: str) -> None:
+    """Load YAML configuration file."""
+    import yaml
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file)
+    print("--------------")
+    print(f"Loaded configuration from {config_path}")
+
+    video_config = VideoProcessingConfig(config.get('video_processing', {}))
+    print(video_config)
 
 def main(argv: Optional[list[str]] = None) -> int:
     """Main CLI entry point."""
     parser = create_parser()
     args = parser.parse_args(argv)
     
-    if hasattr(args, "func"):
-        return args.func(args)
-    else:
+    print(args)
+
+    if not hasattr(args, 'config'):
         parser.print_help()
         return 1
+
+    load_yaml(args.config)
+
+    return 0
 
 
 if __name__ == "__main__":
