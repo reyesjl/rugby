@@ -1,0 +1,1 @@
+"""Core rugby pipeline functionality."""
