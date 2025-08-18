@@ -1,0 +1,1 @@
+"""Video indexing and search functionality."""

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  rugby-dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: rugby-pipeline-dev
+    volumes:
+      - .:/app
+      - rugby-data:/app/data
+    environment:
+      - PYTHONPATH=/app
+      - RUGBY_ENV=development
+    ports:
+      - "8000:8000"  # For future API service
+    stdin_open: true
+    tty: true
+    command: ["python", "-c", "print('🏉 Rugby pipeline development environment ready'); exit(0)"]
+
+volumes:
+  rugby-data:
