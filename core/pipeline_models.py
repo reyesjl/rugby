@@ -59,6 +59,9 @@ class VideoSource:
         self.source_type: VideoSourceType = VideoSourceType(source_config.get('type', 'windows_desktop'))
         self.path: str = source_config.get('path', 'TODO')
         self.watch_patterns: List[str] = source_config.get('watch_patterns', [])
+        # Always ensure 'mp4' (case-insensitive) is present, but do not duplicate
+        if not any(p.lower() == "mp4" for p in self.watch_patterns):
+            self.watch_patterns.append("mp4")
 
     def __str__(self) -> str:
         watch_patterns = ', '.join(self.watch_patterns) if self.watch_patterns else 'None'

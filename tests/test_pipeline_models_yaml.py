@@ -56,18 +56,17 @@ def test_prompt_model_in_video_processing_config():
     assert pm.instructions == "Instructions here."
     assert isinstance(pm.examples, list)
     assert pm.examples[0]["assistant"] == "Resp1"
-
 def test_video_source_type_enum_values():
     assert VideoSourceType.LINUX_DESKTOP.value == "linux_desktop"
     assert VideoSourceType.WINDOWS_DESKTOP.value == "windows_desktop"
     assert VideoSourceType.NETWORK_HOST.value == "network_host"
 
 def test_video_source_init_and_str():
-    config = {"type": "linux_desktop", "path": "/tmp/data", "watch_patterns": ["*.mp4"]}
+    config = {"type": "linux_desktop", "path": "/tmp/data", "watch_patterns": ["mp4"]}
     src = VideoSource(config)
     assert src.source_type == VideoSourceType.LINUX_DESKTOP
     assert src.path == "/tmp/data"
-    assert src.watch_patterns == ["*.mp4"]
+    assert src.watch_patterns == ["mp4"]
     assert "linux_desktop" in str(src)
 
 def test_video_sources_configuration_empty():
@@ -113,22 +112,22 @@ def test_video_processing_config_defaults():
 
 def test_video_sources_configuration():
     sources = [
-        {"type": "linux_desktop", "path": "/tmp/input1", "watch_patterns": ["*.MPG", "*.mpg"]},
-        {"type": "network_host", "path": "/tmp/input2", "watch_patterns": ["*.MP4", "*.mp4"]},
-        {"type": "windows_desktop", "path": "/tmp/input3", "watch_patterns": ["*.MPG", "*.mpg"]}
+        {"type": "linux_desktop", "path": "/tmp/input1", "watch_patterns": ["MPG", "mpg"]},
+        {"type": "network_host", "path": "/tmp/input2", "watch_patterns": ["MP4", "mp4"]},
+        {"type": "windows_desktop", "path": "/tmp/input3", "watch_patterns": ["MPG", "mpg"]}
     ]
     config = VideoSourcesConfiguration(sources)
     assert isinstance(config.sources, list)
     assert len(config.sources) == 3
     assert config.sources[0].source_type == VideoSourceType.LINUX_DESKTOP
     assert config.sources[0].path == "/tmp/input1"
-    assert config.sources[0].watch_patterns == ["*.MPG", "*.mpg"]
+    assert config.sources[0].watch_patterns == ["MPG", "mpg", "mp4"]
     assert config.sources[1].source_type == VideoSourceType.NETWORK_HOST
     assert config.sources[1].path == "/tmp/input2"
-    assert config.sources[1].watch_patterns == ["*.MP4", "*.mp4"]
+    assert config.sources[1].watch_patterns == ["MP4", "mp4"]
     assert config.sources[2].source_type == VideoSourceType.WINDOWS_DESKTOP
     assert config.sources[2].path == "/tmp/input3"
-    assert config.sources[2].watch_patterns == ["*.MPG", "*.mpg"]
+    assert config.sources[2].watch_patterns == ["MPG", "mpg", "mp4"]
 
 
 def test_ffmpeg_config_parsing():
@@ -188,9 +187,9 @@ def test_video_processing_config_from_yaml():
         # Create a sample YAML config file
         config_dict = {
             "sources": [
-                {"type": "linux_desktop", "path": str(tmp_path + "/input1"), "watch_patterns": ["*.MPG", "*.mpg"]},
-                {"type": "network_host", "path": str(tmp_path + "/input2"), "watch_patterns": ["*.MP4", "*.mp4"]},
-                {"type": "windows_desktop", "path": str(tmp_path + "/input3"), "watch_patterns": ["*.MPG", "*.mpg"]}
+                {"type": "linux_desktop", "path": str(tmp_path + "/input1"), "watch_patterns": ["MPG", "mpg"]},
+                {"type": "network_host", "path": str(tmp_path + "/input2"), "watch_patterns": ["MP4", "mp4"]},
+                {"type": "windows_desktop", "path": str(tmp_path + "/input3"), "watch_patterns": ["MPG", "mpg"]}
             ],
             "conversion": {
                 "ffmpeg": {
@@ -219,30 +218,30 @@ def test_video_processing_config_from_yaml():
         # Pass the loaded dict to VideoProcessingConfig
         vpc = VideoProcessingConfig(loaded)
 
-        # Test sources
-        assert isinstance(vpc.video_sources, VideoSourcesConfiguration)
-        assert len(vpc.video_sources.sources) == 3
-        assert vpc.video_sources.sources[0].source_type == VideoSourceType.LINUX_DESKTOP
-        assert vpc.video_sources.sources[0].path == str(tmp_path + "/input1")
-        assert vpc.video_sources.sources[0].watch_patterns == ["*.MPG", "*.mpg"]
-        assert vpc.video_sources.sources[1].source_type == VideoSourceType.NETWORK_HOST
-        assert vpc.video_sources.sources[1].path == str(tmp_path + "/input2")
-        assert vpc.video_sources.sources[1].watch_patterns == ["*.MP4", "*.mp4"]
-        assert vpc.video_sources.sources[2].source_type == VideoSourceType.WINDOWS_DESKTOP
-        assert vpc.video_sources.sources[2].path == str(tmp_path + "/input3")
-        assert vpc.video_sources.sources[2].watch_patterns == ["*.MPG", "*.mpg"]
+    # Test sources
+    assert isinstance(vpc.video_sources, VideoSourcesConfiguration)
+    assert len(vpc.video_sources.sources) == 3
+    assert vpc.video_sources.sources[0].source_type == VideoSourceType.LINUX_DESKTOP
+    assert vpc.video_sources.sources[0].path == str(tmp_path + "/input1")
+    assert vpc.video_sources.sources[0].watch_patterns == ["MPG", "mpg", "mp4"]
+    assert vpc.video_sources.sources[1].source_type == VideoSourceType.NETWORK_HOST
+    assert vpc.video_sources.sources[1].path == str(tmp_path + "/input2")
+    assert vpc.video_sources.sources[1].watch_patterns == ["MP4", "mp4"]
+    assert vpc.video_sources.sources[2].source_type == VideoSourceType.WINDOWS_DESKTOP
+    assert vpc.video_sources.sources[2].path == str(tmp_path + "/input3")
+    assert vpc.video_sources.sources[2].watch_patterns == ["MPG", "mpg", "mp4"]
 
-        # Test conversion
-        assert isinstance(vpc.conversion_config, ConversionConfig)
-        assert vpc.conversion_config.ffmpeg.video_codec == "libx264"
-        assert vpc.conversion_config.ffmpeg.crf == 23
-        assert vpc.conversion_config.ffmpeg.preset == "fast"
-        assert vpc.conversion_config.ffmpeg.audio_codec == "aac"
-        assert vpc.conversion_config.ffmpeg.audio_bitrate == "128k"
-        assert vpc.conversion_config.parallel_workers == 4
+    # Test conversion
+    assert isinstance(vpc.conversion_config, ConversionConfig)
+    assert vpc.conversion_config.ffmpeg.video_codec == "libx264"
+    assert vpc.conversion_config.ffmpeg.crf == 23
+    assert vpc.conversion_config.ffmpeg.preset == "fast"
+    assert vpc.conversion_config.ffmpeg.audio_codec == "aac"
+    assert vpc.conversion_config.ffmpeg.audio_bitrate == "128k"
+    assert vpc.conversion_config.parallel_workers == 4
 
-        # Test indexing
-        assert isinstance(vpc.indexing_config, IndexingConfig)
-        assert vpc.indexing_config.ai_provider == "openai"
-        assert vpc.indexing_config.model == "gpt-4o-mini"
-        assert vpc.indexing_config.batch_size == 10
+    # Test indexing
+    assert isinstance(vpc.indexing_config, IndexingConfig)
+    assert vpc.indexing_config.ai_provider == "openai"
+    assert vpc.indexing_config.model == "gpt-4o-mini"
+    assert vpc.indexing_config.batch_size == 10

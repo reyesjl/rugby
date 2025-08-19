@@ -9,6 +9,8 @@ import sys
 import os
 import importlib.util
 from typing import List, Callable
+import inspect
+import tempfile
 
 
 class TestResult:
@@ -56,12 +58,19 @@ def run_test_file(test_file: str) -> List[TestResult]:
         if name.startswith("test_"):
             test_func = getattr(test_module, name)
             if callable(test_func):
+                sig = inspect.signature(test_func)
+                params = sig.parameters
                 try:
-                    test_func()
+                    if "tmp_path" in params:
+                        with tempfile.TemporaryDirectory() as tmpdirname:
+                            import pathlib
+                            tmp_path = pathlib.Path(tmpdirname)
+                            test_func(tmp_path=tmp_path)
+                    else:
+                        test_func()
                     results.append(TestResult(f"{test_file}::{name}", True))
                 except Exception as e:
                     results.append(TestResult(f"{test_file}::{name}", False, str(e)))
-    
     return results
 
 

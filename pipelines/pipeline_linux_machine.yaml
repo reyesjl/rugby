@@ -1,14 +1,8 @@
 video_processing:  
   sources:  
     - type: "linux_desktop"  
-      path: "/home/benn/CODE/RUGBY/rugby/input_data/08182025"  
-      watch_patterns: ["*.MPG", "*.mpg"]  
-    - type: "network_host"
-      path: "/mnt/nas/rugby_videos/"
-      watch_patterns: ["*.mp4", "*.avi", "*.mov"]
-    - type: "windows_desktop"
-      path: "D:/Rugby/Clips/"
-      watch_patterns: ["*.mkv", "*.mp4"]
+      path: "/home/benn/CODE/RUGBY/rugby/input_media/08182025"  
+      watch_patterns: ["mpg", "mov", "avi", "mkv"]  
         
   conversion:  
     ffmpeg:  
