@@ -27,4 +27,36 @@ class PipelineRunner:
                 print(f" [ERROR] {e}")
 
         print(f"[OK] Total video files found: {len(all_video_files)}")
-        print("[READY] Pipeline ready. Proceeding with discovered video files.")
+import logging
+from core.pipeline_models import VideoProcessingConfig, VideoSource
+from ingest.video_finder import find_video_files
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(levelname)s] %(message)s'
+)
+
+class PipelineRunner:
+    def __init__(self, config: VideoProcessingConfig):
+        self.config = config
+
+    def run(self):
+        logging.info("Initializing pipeline...")
+        logging.info("Connecting to sources...")
+        logging.info("Booting up pipeline...")
+        logging.info("Using configuration:")
+        logging.info(self.config)
+
+        logging.info("Scanning video sources...")
+        all_video_files = []
+        total_sources = len(self.config.video_sources.sources)
+        for idx, source in enumerate(self.config.video_sources.sources, 1):
+            try:
+                video_files = find_video_files(source.path, recursive=True)
+                logging.info(f"({idx}/{total_sources}) Scanning: {source.path} ... found {len(video_files)} videos.")
+                all_video_files.extend(video_files)
+            except Exception as e:
+                logging.error(f"({idx}/{total_sources}) Scanning: {source.path} ... [ERROR] {e}")
+
+        logging.info(f"Total video files found: {len(all_video_files)}")
+        logging.info("Pipeline ready. Proceeding with discovered video files.")
