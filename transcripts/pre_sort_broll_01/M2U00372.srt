@@ -1,8 +1,0 @@
-1
-00:00:00,560 --> 00:00:04,240
-Airbus A320-1 from Amsterdam to Amsterdam ng
-
-2
-00:00:34,240 --> 00:01:04,220
-Thanks for watching!
-
