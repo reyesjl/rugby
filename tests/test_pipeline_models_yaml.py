@@ -4,6 +4,59 @@ from core.pipeline_models import (
     ConversionConfig, FFmpegConfig, IndexingConfig, VideoProcessingConfig,
     VideoSourceType, VideoSource, VideoSourcesConfiguration
 )
+
+def test_prompt_model_in_indexing_config():
+    prompt_model_dict = {
+        "system": "You are a video editor AI.",
+        "user": "{user_request}",
+        "instructions": "Use the available clips.",
+        "examples": [
+            {"user": "Create a highlight reel.", "assistant": "{...}"},
+            {"user": "Show all tries.", "assistant": "{...}"}
+        ]
+    }
+    indexing_dict = {
+        "ai_provider": "openai",
+        "model": "gpt-4o-mini",
+        "batch_size": 10,
+        "prompt_model": prompt_model_dict
+    }
+    config = IndexingConfig(indexing_dict)
+    pm = config.prompt_model
+    assert pm.system == "You are a video editor AI."
+    assert pm.user == "{user_request}"
+    assert pm.instructions == "Use the available clips."
+    assert isinstance(pm.examples, list)
+    assert pm.examples[0]["user"] == "Create a highlight reel."
+    assert pm.examples[1]["assistant"] == "{...}"
+
+def test_prompt_model_in_video_processing_config():
+    prompt_model_dict = {
+        "system": "System message.",
+        "user": "User message.",
+        "instructions": "Instructions here.",
+        "examples": [
+            {"user": "Prompt1", "assistant": "Resp1"}
+        ]
+    }
+    config_dict = {
+        "sources": [],
+        "conversion": {},
+        "indexing": {
+            "ai_provider": "openai",
+            "model": "gpt-4o-mini",
+            "batch_size": 10,
+            "prompt_model": prompt_model_dict
+        }
+    }
+    vpc = VideoProcessingConfig(config_dict)
+    pm = vpc.indexing_config.prompt_model
+    assert pm.system == "System message."
+    assert pm.user == "User message."
+    assert pm.instructions == "Instructions here."
+    assert isinstance(pm.examples, list)
+    assert pm.examples[0]["assistant"] == "Resp1"
+
 def test_video_source_type_enum_values():
     assert VideoSourceType.LINUX_DESKTOP.value == "linux_desktop"
     assert VideoSourceType.WINDOWS_DESKTOP.value == "windows_desktop"

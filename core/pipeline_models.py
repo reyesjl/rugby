@@ -1,3 +1,20 @@
+# ------------------------
+# Prompt Model
+# ------------------------
+class PromptModel:
+    """
+    Structured prompt for LLMs, supporting system, user, instructions, and examples.
+    """
+    def __init__(self, prompt_config: dict = {}):
+        self.system: str = prompt_config.get('system', '').strip()
+        self.user: str = prompt_config.get('user', '').strip()
+        self.instructions: str = prompt_config.get('instructions', '').strip()
+        self.examples: list = prompt_config.get('examples', [])
+
+    def __str__(self) -> str:
+        return (
+            f"PromptModel(\n  system={repr(self.system)},\n  user={repr(self.user)},\n  instructions={repr(self.instructions)},\n  examples={self.examples}\n)"
+        )
 
 from enum import Enum
 from typing import List
@@ -104,11 +121,12 @@ class IndexingConfig:
         self.ai_provider: str = indexing_config.get('ai_provider', 'openai')
         self.model: str = indexing_config.get('model', 'gpt-4o-mini')
         self.batch_size: int = indexing_config.get('batch_size', 10)
+        self.prompt_model: PromptModel = PromptModel(indexing_config.get('prompt_model', {}))
 
     def __str__(self) -> str:
         return (
             f"IndexingConfig(ai_provider={self.ai_provider}, "
-            f"model={self.model}, batch_size={self.batch_size})"
+            f"model={self.model}, batch_size={self.batch_size}, prompt_model={self.prompt_model})"
         )
 
 # ------------------------
