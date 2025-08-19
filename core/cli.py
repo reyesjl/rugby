@@ -4,6 +4,7 @@ import argparse
 import sys
 from typing import Optional
 from core.pipeline_models import VideoProcessingConfig
+from core.pipeline_runner import PipelineRunner
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -15,10 +16,14 @@ def create_parser() -> argparse.ArgumentParser:
     
     parser.add_argument(
         "--config",
-        required=True,
+        required=False,
         help="Launch Provided Pipeline",
     )
-    
+    parser.add_argument(
+        "--version",
+        action="store_true",
+        help="Show rugby-cli version and exit",
+    )
     return parser
 
 
@@ -40,21 +45,24 @@ def load_yaml(config_path: str) -> None:
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
     video_config = VideoProcessingConfig(config.get('video_processing', {}))
-    print(video_config)
+    #print(video_config)
+    pipeline_runner = PipelineRunner(video_config)
+    pipeline_runner.run()
 
 def main(argv: Optional[list[str]] = None) -> int:
     """Main CLI entry point."""
     parser = create_parser()
     args = parser.parse_args(argv)
-    
-    print(args)
 
-    if not hasattr(args, 'config'):
+    if getattr(args, "version", False):
+        print("rugby-cli version 0.1.0")
+        return 0
+
+    if not getattr(args, "config", None):
         parser.print_help()
         return 1
 
     load_yaml(args.config)
-
     return 0
 
 
