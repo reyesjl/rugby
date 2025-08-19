@@ -5,7 +5,9 @@ class PromptModel:
     """
     Structured prompt for LLMs, supporting system, user, instructions, and examples.
     """
-    def __init__(self, prompt_config: dict = {}):
+    def __init__(self, prompt_config: dict = None):
+        if prompt_config is None:
+            prompt_config = {}
         self.system: str = prompt_config.get('system', '').strip()
         self.user: str = prompt_config.get('user', '').strip()
         self.instructions: str = prompt_config.get('instructions', '').strip()
