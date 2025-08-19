@@ -2,6 +2,13 @@
 # Prompt Model
 # ------------------------
 from typing import List, Optional
+import json
+
+
+def _omit_empty(d: dict) -> dict:
+    return {k: v for k, v in d.items() if v not in (None, "", [], {})}
+
+
 class PromptModel:
     """
     Structured prompt for LLMs, supporting system, user, instructions, and examples.
@@ -18,6 +25,14 @@ class PromptModel:
         return (
             f"PromptModel(\n  system={repr(self.system)},\n  user={repr(self.user)},\n  instructions={repr(self.instructions)},\n  examples={self.examples}\n)"
         )
+
+    def to_dict(self) -> dict:
+        return _omit_empty({
+            "system": self.system,
+            "user": self.user,
+            "instructions": self.instructions,
+            "examples": self.examples if self.examples else [],
+        })
 
 from enum import Enum
 from typing import List
@@ -53,6 +68,13 @@ class VideoSource:
             f"    Watch Patterns: {watch_patterns}"
         )
 
+    def to_dict(self) -> dict:
+        return _omit_empty({
+            "type": self.source_type.value,
+            "path": self.path,
+            "watch_patterns": self.watch_patterns if self.watch_patterns else [],
+        })
+
 
 class VideoSourcesConfiguration:
     """
@@ -76,6 +98,10 @@ class VideoSourcesConfiguration:
         for ix, source in enumerate(self.sources):
             res += f"  Source [{ix+1}]:\n{source}\n"
         return res.rstrip()
+
+    def to_list(self) -> List[dict]:
+        return [s.to_dict() for s in self.sources]
+
 
 # ------------------------
 # Conversion Models
@@ -101,6 +127,16 @@ class FFmpegConfig:
             f"  Audio Bitrate : {self.audio_bitrate}"
         )
 
+    def to_dict(self) -> dict:
+        return _omit_empty({
+            "video_codec": self.video_codec,
+            "crf": self.crf,
+            "preset": self.preset,
+            "audio_codec": self.audio_codec,
+            "audio_bitrate": self.audio_bitrate,
+        })
+
+
 class ConversionConfig:
     """
     Configuration for the video conversion process, including FFmpeg settings and parallelism.
@@ -116,6 +152,13 @@ class ConversionConfig:
             f"{self.ffmpeg}\n"
             f"  Parallel Jobs : {self.parallel_workers}"
         )
+
+    def to_dict(self) -> dict:
+        return _omit_empty({
+            "ffmpeg": self.ffmpeg.to_dict(),
+            "parallel_workers": self.parallel_workers,
+        })
+
 
 # ------------------------
 # Indexing Model
@@ -158,6 +201,16 @@ class IndexingConfig:
         else:
             res += "\n  Prompt Model  : (none)"
         return res
+
+    def to_dict(self) -> dict:
+        return _omit_empty({
+            "ai_provider": self.ai_provider,
+            "model": self.model,
+            "batch_size": self.batch_size,
+            "prompt_model": self.prompt_model.to_dict(),
+        })
+
+
 # ------------------------
 # Container Model
 # ------------------------
@@ -178,15 +231,12 @@ class VideoProcessingConfig:
         self.indexing_config: IndexingConfig = IndexingConfig(indexing_config)
 
     def __str__(self) -> str:
-        return (
-            "\n==============================\n"
-            "  Pipeline Configuration\n"
-            "==============================\n"
-            "\n--- Video Sources ---\n"
-            f"{self.video_sources}\n"
-            "\n--- Conversion Settings ---\n"
-            f"{self.conversion_config}\n"
-            "\n--- Indexing Settings ---\n"
-            f"{self.indexing_config}\n"
-            "==============================\n"
-        )
+        # Compact, machine-readable, omits empty values
+        return json.dumps(self.to_dict(), indent=2)
+
+    def to_dict(self) -> dict:
+        return _omit_empty({
+            "sources": self.video_sources.to_list(),
+            "conversion": self.conversion_config.to_dict(),
+            "indexing": self.indexing_config.to_dict(),
+        })
