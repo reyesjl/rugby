@@ -145,7 +145,11 @@ class IndexingConfig:
             if pm.user:
                 res += f"\n    User:        {pm.user.replace(chr(10), chr(10)+'      ')}"
             if pm.instructions:
-                res += f"\n    Instructions: {pm.instructions.replace(chr(10), chr(10)+'      ')}"
+                res += f"\n    System:      {pm.system.replace('\\n', '\\n' + '      ')}"
+            if pm.user:
+                res += f"\n    User:        {pm.user.replace('\\n', '\\n' + '      ')}"
+            if pm.instructions:
+                res += f"\n    Instructions: {pm.instructions.replace('\\n', '\\n' + '      ')}"
             if pm.examples:
                 res += "\n    Examples:"
                 for ex in pm.examples:
