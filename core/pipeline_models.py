@@ -1,11 +1,12 @@
 # ------------------------
 # Prompt Model
 # ------------------------
+from typing import List, Optional
 class PromptModel:
     """
     Structured prompt for LLMs, supporting system, user, instructions, and examples.
     """
-    def __init__(self, prompt_config: dict = None):
+    def __init__(self, prompt_config: Optional[dict] = None):
         if prompt_config is None:
             prompt_config = {}
         self.system: str = prompt_config.get('system', '').strip()
@@ -45,10 +46,11 @@ class VideoSource:
         self.watch_patterns: List[str] = source_config.get('watch_patterns', [])
 
     def __str__(self) -> str:
+        watch_patterns = ', '.join(self.watch_patterns) if self.watch_patterns else 'None'
         return (
-            f"VideoSource(type={self.source_type.value}, "
-            f"path={self.path}, "
-            f"watch_patterns={self.watch_patterns})"
+            f"    Type         : {self.source_type.value}\n"
+            f"    Path         : {self.path}\n"
+            f"    Watch Patterns: {watch_patterns}"
         )
 
 
@@ -68,10 +70,12 @@ class VideoSourcesConfiguration:
             self.sources.append(VideoSource(source))
 
     def __str__(self) -> str:
+        if not self.sources:
+            return "  (No video sources configured)"
         res = ""
-        for ix,source in enumerate(self.sources):
-            res += f"\n\t\tSource [{ix}]: {source}"
-        return res
+        for ix, source in enumerate(self.sources):
+            res += f"  Source [{ix+1}]:\n{source}\n"
+        return res.rstrip()
 
 # ------------------------
 # Conversion Models
@@ -90,9 +94,11 @@ class FFmpegConfig:
 
     def __str__(self) -> str:
         return (
-            f"FFmpegConfig(video_codec={self.video_codec}, crf={self.crf}, "
-            f"preset={self.preset}, audio_codec={self.audio_codec}, "
-            f"audio_bitrate={self.audio_bitrate})"
+            f"  Video Codec   : {self.video_codec}\n"
+            f"  CRF           : {self.crf}\n"
+            f"  Preset        : {self.preset}\n"
+            f"  Audio Codec   : {self.audio_codec}\n"
+            f"  Audio Bitrate : {self.audio_bitrate}"
         )
 
 class ConversionConfig:
@@ -107,8 +113,8 @@ class ConversionConfig:
 
     def __str__(self) -> str:
         return (
-            f"ConversionConfig(ffmpeg={self.ffmpeg}, "
-            f"parallel_workers={self.parallel_workers})"
+            f"{self.ffmpeg}\n"
+            f"  Parallel Jobs : {self.parallel_workers}"
         )
 
 # ------------------------
@@ -126,11 +132,28 @@ class IndexingConfig:
         self.prompt_model: PromptModel = PromptModel(indexing_config.get('prompt_model', {}))
 
     def __str__(self) -> str:
-        return (
-            f"IndexingConfig(ai_provider={self.ai_provider}, "
-            f"model={self.model}, batch_size={self.batch_size}, prompt_model={self.prompt_model})"
+        res = (
+            f"  AI Provider   : {self.ai_provider}\n"
+            f"  Model         : {self.model}\n"
+            f"  Batch Size    : {self.batch_size}"
         )
-
+        pm = self.prompt_model
+        if pm.system or pm.user or pm.instructions or pm.examples:
+            res += "\n  Prompt Model:"
+            if pm.system:
+                res += f"\n    System:      {pm.system.replace(chr(10), chr(10)+'      ')}"
+            if pm.user:
+                res += f"\n    User:        {pm.user.replace(chr(10), chr(10)+'      ')}"
+            if pm.instructions:
+                res += f"\n    Instructions: {pm.instructions.replace(chr(10), chr(10)+'      ')}"
+            if pm.examples:
+                res += "\n    Examples:"
+                for ex in pm.examples:
+                    res += f"\n      - user: {ex.get('user', '')}"
+                    res += f"\n        assistant: {ex.get('assistant', '')}"
+        else:
+            res += "\n  Prompt Model  : (none)"
+        return res
 # ------------------------
 # Container Model
 # ------------------------
@@ -152,9 +175,14 @@ class VideoProcessingConfig:
 
     def __str__(self) -> str:
         return (
-            f"VideoProcessingConfig(\n"
-            f"\tSources:{self.video_sources},\n"
-            f"\tConversion Configuration: {self.conversion_config},\n"
-            f"\tIndexing Configuration:   {self.indexing_config}\n"
-            f")"
+            "\n==============================\n"
+            "  Pipeline Configuration\n"
+            "==============================\n"
+            "\n--- Video Sources ---\n"
+            f"{self.video_sources}\n"
+            "\n--- Conversion Settings ---\n"
+            f"{self.conversion_config}\n"
+            "\n--- Indexing Settings ---\n"
+            f"{self.indexing_config}\n"
+            "==============================\n"
         )

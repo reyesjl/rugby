@@ -39,48 +39,8 @@ def load_yaml(config_path: str) -> None:
     import yaml
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
-    print("\n==============================")
-    print(f"  Pipeline Configuration Loaded from: {config_path}")
-    print("==============================")
     video_config = VideoProcessingConfig(config.get('video_processing', {}))
-    print("\n--- Video Sources ---")
-    for ix, src in enumerate(video_config.video_sources.sources):
-        print(f"  Source [{ix+1}]:")
-        print(f"    Type         : {src.source_type.value}")
-        print(f"    Path         : {src.path}")
-        print(f"    Watch Patterns: {', '.join(src.watch_patterns) if src.watch_patterns else 'None'}")
-
-    print("\n--- Conversion Settings ---")
-    ffmpeg = video_config.conversion_config.ffmpeg
-    print(f"  Video Codec   : {ffmpeg.video_codec}")
-    print(f"  CRF           : {ffmpeg.crf}")
-    print(f"  Preset        : {ffmpeg.preset}")
-    print(f"  Audio Codec   : {ffmpeg.audio_codec}")
-    print(f"  Audio Bitrate : {ffmpeg.audio_bitrate}")
-    print(f"  Parallel Jobs : {video_config.conversion_config.parallel_workers}")
-
-    print("\n--- Indexing Settings ---")
-    idx = video_config.indexing_config
-    print(f"  AI Provider   : {idx.ai_provider}")
-    print(f"  Model         : {idx.model}")
-    print(f"  Batch Size    : {idx.batch_size}")
-    pm = idx.prompt_model
-    if pm.system or pm.user or pm.instructions or pm.examples:
-        print("  Prompt Model:")
-        if pm.system:
-            print("    System:      ", pm.system.replace('\n', '\n      '))
-        if pm.user:
-            print("    User:        ", pm.user.replace('\n', '\n      '))
-        if pm.instructions:
-            print("    Instructions:", pm.instructions.replace('\n', '\n      '))
-        if pm.examples:
-            print("    Examples:")
-            for ex in pm.examples:
-                print(f"      - user: {ex.get('user', '')}")
-                print(f"        assistant: {ex.get('assistant', '')}")
-    else:
-        print("  Prompt Model  : (none)")
-    print("==============================\n")
+    print(video_config)
 
 def main(argv: Optional[list[str]] = None) -> int:
     """Main CLI entry point."""
