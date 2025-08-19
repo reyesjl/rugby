@@ -88,14 +88,28 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = [
     "-v",
-    "--cov=rugby",
+    "--cov=core",
+    "--cov=ingest",
+    "--cov=indexing",
+    "--cov=convert",
+    "--cov=api",
+    "--cov=ops",
+    "--cov=storage",
     "--cov-report=term-missing",
     "--cov-report=html",
 ]
 
 # Coverage configuration
 [tool.coverage.run]
-source = ["rugby"]
+source = [
+    "core",
+    "ingest",
+    "indexing",
+    "convert",
+    "api",
+    "ops",
+    "storage",
+]
 omit = [
     "tests/*",
     "*/migrations/*",

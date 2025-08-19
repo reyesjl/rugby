@@ -2,10 +2,12 @@
 
 import argparse
 import sys
+import logging
 from typing import Optional
 from core.pipeline_models import VideoProcessingConfig
 from core.pipeline_runner import PipelineRunner
 
+logger = logging.getLogger(__name__)
 
 def create_parser() -> argparse.ArgumentParser:
     """Create the main argument parser."""
@@ -20,24 +22,30 @@ def create_parser() -> argparse.ArgumentParser:
         help="Launch Provided Pipeline",
     )
     parser.add_argument(
-        "--version",
+        "-v", "--version",
         action="store_true",
         help="Show rugby-cli version and exit",
+    )
+    parser.add_argument(
+        "--status",
+        action="store_true",
+        help="Show Rugby pipeline status and exit",
     )
     return parser
 
 
 def cmd_version(args: argparse.Namespace) -> int:
     """Show version information."""
-    print("rugby-cli version 0.1.0")
+    logger.info("rugby-cli version 0.1.0")
     return 0
 
 
 def cmd_status(args: argparse.Namespace) -> int:
     """Show pipeline status."""
-    print("🏉 Rugby Pipeline Status: Ready")
-    print("✅ All packages initialized")
+    logger.info("Rugby Pipeline Status: Ready")
+    logger.info("All packages initialized")
     return 0
+
 
 def load_yaml(config_path: str) -> None:
     """Load YAML configuration file."""
@@ -45,18 +53,32 @@ def load_yaml(config_path: str) -> None:
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
     video_config = VideoProcessingConfig(config.get('video_processing', {}))
-    #print(video_config)
+    # logger.debug("Loaded config: %s", video_config)
     pipeline_runner = PipelineRunner(video_config)
     pipeline_runner.run()
+
+
+def configure_logging(level: int = logging.INFO) -> None:
+    """Initialize application logging."""
+    logging.basicConfig(
+        level=level,
+        format='[%(levelname)s] %(message)s'
+    )
+
 
 def main(argv: Optional[list[str]] = None) -> int:
     """Main CLI entry point."""
     parser = create_parser()
     args = parser.parse_args(argv)
 
+    # Configure logging for the application
+    configure_logging()
+
+    if getattr(args, "status", False):
+        return cmd_status(args)
+
     if getattr(args, "version", False):
-        print("rugby-cli version 0.1.0")
-        return 0
+        return cmd_version(args)
 
     if not getattr(args, "config", None):
         parser.print_help()
@@ -64,7 +86,6 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     load_yaml(args.config)
     return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())
