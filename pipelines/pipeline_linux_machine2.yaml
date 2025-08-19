@@ -1,7 +1,7 @@
 video_processing:  
   sources:  
     - type: "linux_desktop"  
-      path: "/home/reyesjl/projects/MEDIA/rugby/input_data/08182025"  
+      path: "/home/reyesjl/projects/rugby/tuesday_session_08_06_2025_mp4"  
       watch_patterns: ["*.MPG", "*.mpg"]  
         
   conversion:  
