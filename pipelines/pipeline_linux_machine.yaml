@@ -3,24 +3,24 @@
 # This file is the sole property of Biasware LLC.
 # Unauthorized use, distribution, or reverse engineering is prohibited.
 
-video_processing:  
-  sources:  
-    - type: "linux_desktop"  
-      path: "/home/benn/CODE/RUGBY/rugby/input_media/08182025"  
-      watch_patterns: ["mpg", "mov", "avi", "mkv"]  
-        
-  conversion:  
-    ffmpeg:  
-      video_codec: "libx264"  
-      crf: 23  
-      preset: "fast"  
-      audio_codec: "aac"  
-      audio_bitrate: "128k"  
-    parallel_workers: 4  
-      
-  indexing:  
-    ai_provider: "openai"  
-    model: "gpt-4o-mini"  
+video_processing:
+  sources:
+    - type: "linux_desktop"
+      path: "/home/benn/CODE/RUGBY/rugby/input_media/08182025"
+      watch_patterns: ["mpg", "mov", "avi", "mkv"]
+
+  conversion:
+    ffmpeg:
+      video_codec: "libx264"
+      crf: 23
+      preset: "fast"
+      audio_codec: "aac"
+      audio_bitrate: "128k"
+    parallel_workers: 4
+
+  indexing:
+    ai_provider: "openai"
+    model: "gpt-4o-mini"
     batch_size: 10
     prompt_model:
       system: |
@@ -32,4 +32,3 @@ video_processing:
       examples:
         - user: "Create a highlight reel of best tackles."
           assistant: "{...example JSON output...}"
-

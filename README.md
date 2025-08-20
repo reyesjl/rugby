@@ -1,26 +1,26 @@
 # Rugby Pipeline
 
-A comprehensive Python-based video processing system designed for rugby video analysis and content management.  
+A comprehensive Python-based video processing system designed for rugby video analysis and content management.
 The pipeline provides end-to-end capabilities for video ingestion, format conversion, AI-powered transcription and indexing, and searchable content generation.
 
 ---
 
 ## Features
 
-- **Video Ingestion**  
-  Automated discovery of video files from multiple source types (Linux desktop, Windows desktop, network hosts).  
+- **Video Ingestion**
+  Automated discovery of video files from multiple source types (Linux desktop, Windows desktop, network hosts).
   _Source: `pipeline_models.py:44-49`_
 
-- **Format Conversion**  
-  Standardization to MP4 format using FFmpeg with configurable quality settings.  
+- **Format Conversion**
+  Standardization to MP4 format using FFmpeg with configurable quality settings.
   _Source: `pipeline_models.py:112-141`_
 
-- **AI-Powered Indexing**  
-  Content analysis using OpenAI models for searchable metadata generation.  
+- **AI-Powered Indexing**
+  Content analysis using OpenAI models for searchable metadata generation.
   _Source: `pipeline_models.py:169-178`_
 
-- **Type-Safe Configuration**  
-  YAML-based pipeline configuration with Python model validation.  
+- **Type-Safe Configuration**
+  YAML-based pipeline configuration with Python model validation.
   _Source: `pipeline_models.py:220-234`_
 
 ---
@@ -63,9 +63,9 @@ rugby-cli --config pipeline.yaml
 
 ## CLI Commands
 
-- `rugby-cli --config <path>` → Execute a configured video processing pipeline (`cli.py:19-23`)  
-- `rugby-cli --version` → Display version information (`cli.py:24-28`)  
-- `rugby-cli --status` → Show pipeline status and readiness (`cli.py:29-33`)  
+- `rugby-cli --config <path>` → Execute a configured video processing pipeline (`cli.py:19-23`)
+- `rugby-cli --version` → Display version information (`cli.py:24-28`)
+- `rugby-cli --status` → Show pipeline status and readiness (`cli.py:29-33`)
 
 ---
 
@@ -90,16 +90,16 @@ rugby/
 
 The pipeline uses type-safe configuration models that support:
 
-- **Video Sources**  
-  Multiple source types with configurable watch patterns  
+- **Video Sources**
+  Multiple source types with configurable watch patterns
   _(`pipeline_models.py:52-80`)_
 
-- **Conversion Settings**  
-  FFmpeg parameters and parallel processing options  
+- **Conversion Settings**
+  FFmpeg parameters and parallel processing options
   _(`pipeline_models.py:143-164`)_
 
-- **AI Indexing**  
-  Provider settings, model selection, and prompt configuration  
+- **AI Indexing**
+  Provider settings, model selection, and prompt configuration
   _(`pipeline_models.py:169-215`)_
 
 ---
@@ -107,9 +107,9 @@ The pipeline uses type-safe configuration models that support:
 ## Development
 
 ### Requirements
-- Python 3.9+ (`pyproject.toml:10`)  
-- FFmpeg (for video conversion)  
-- OpenAI API key (for indexing)  
+- Python 3.9+ (`pyproject.toml:10`)
+- FFmpeg (for video conversion)
+- OpenAI API key (for indexing)
 
 ### Setup
 ```bash
@@ -131,16 +131,16 @@ mypy .
 ### Development Tools
 Defined in `pyproject.toml:30-36`:
 
-- **pytest** → Testing framework  
-- **ruff** → Code formatting and linting  
-- **mypy** → Static type checking  
-- **pre-commit** → Git hooks for code quality  
+- **pytest** → Testing framework
+- **ruff** → Code formatting and linting
+- **mypy** → Static type checking
+- **pre-commit** → Git hooks for code quality
 
 ---
 
 ## Project History
 
-This project evolved from a collection of shell scripts and Python utilities in the `/scripts` directory that handled video ingestion, conversion, and indexing tasks.  
+This project evolved from a collection of shell scripts and Python utilities in the `/scripts` directory that handled video ingestion, conversion, and indexing tasks.
 
 The current implementation provides a **unified, type-safe pipeline** with proper configuration management and a CLI interface—replacing the previous ad-hoc script-based approach while maintaining compatibility with existing video processing workflows.
 
@@ -154,4 +154,3 @@ Use of this software is governed by the Biasware LLC Proprietary License.
 Unauthorized copying, modification, distribution, or reverse engineering is strictly prohibited.
 
 For licensing inquiries, contact: contact@biasware.com
-

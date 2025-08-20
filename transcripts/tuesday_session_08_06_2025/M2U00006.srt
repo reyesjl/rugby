@@ -17,4 +17,3 @@ Oh, now I've made it better.
 5
 00:00:17,000 --> 00:00:19,000
 Yeah, it's fixed.
-

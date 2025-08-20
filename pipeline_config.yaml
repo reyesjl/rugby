@@ -10,7 +10,7 @@
 pipeline:
   name: "rugby-pipeline"
   version: "0.1.0"
-  
+
   # Processing stages
   stages:
     - ingest
@@ -27,18 +27,18 @@ ingest:
     - ".mp4"
     - ".avi"
     - ".mov"
-  
+
   # Input directories to monitor
   input_directories: []
-  
+
   # Output directory for ingested files
   output_directory: "data/ingested"
 
-# Conversion configuration  
+# Conversion configuration
 convert:
   # Target format for video conversion
   target_format: "mp4"
-  
+
   # FFmpeg settings for web optimization
   ffmpeg_settings:
     video_codec: "libx264"
@@ -46,7 +46,7 @@ convert:
     preset: "fast"
     audio_codec: "aac"
     audio_bitrate: "128k"
-    
+
   # Output directory for converted files
   output_directory: "data/converted"
 
@@ -57,12 +57,12 @@ indexing:
     enabled: false
     model: "large"
     language: "English"
-    
+
   # Summary generation
   summarization:
     enabled: false
     provider: "openai"
-    
+
   # Search index settings
   search:
     index_directory: "data/index"
@@ -73,7 +73,7 @@ api:
   host: "0.0.0.0"
   port: 8000
   debug: false
-  
+
   # CORS settings
   cors:
     enabled: true
@@ -85,11 +85,11 @@ storage:
   base_directory: "data"
   subdirectories:
     videos: "videos"
-    transcripts: "transcripts"  
+    transcripts: "transcripts"
     summaries: "summaries"
     sequences: "sequences"
     index: "index"
-    
+
   # File retention settings
   retention:
     temporary_files_days: 7
@@ -101,7 +101,7 @@ ops:
   logging:
     level: "INFO"
     format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    
+
   # Monitoring
   monitoring:
     enabled: false

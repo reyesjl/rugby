@@ -5,18 +5,21 @@
 
 """Tests for the core CLI functionality."""
 
-import sys
 import os
-from core.cli import main
+
 # from core.pipeline_models import VideoProcessingConfig
 import tempfile
+
 import yaml
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from core.cli import main
+
 
 def test_main_with_config():
     """Test main function with --config argument and a valid YAML file."""
-    sample_config = {"video_processing": {"sources": [], "conversion": {}, "indexing": {}}}
+    sample_config: dict = {
+        "video_processing": {"sources": [], "conversion": {}, "indexing": {}}
+    }
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp:
         yaml.dump(sample_config, tmp)
         tmp_path = tmp.name

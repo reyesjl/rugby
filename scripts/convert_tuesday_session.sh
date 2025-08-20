@@ -24,16 +24,16 @@ for mpg_file in "$SOURCE_DIR"/*.MPG; do
         # Get filename without extension
         filename=$(basename "$mpg_file" .MPG)
         output_file="$OUTPUT_DIR/${filename}.mp4"
-        
+
         # Skip if already exists
         if [ -f "$output_file" ]; then
             echo "Skipping $filename (already exists)"
             continue
         fi
-        
+
         count=$((count + 1))
         echo "[$count/$total] Converting $filename..."
-        
+
         # Convert with ffmpeg - preserving audio and optimizing for web
         ffmpeg -i "$mpg_file" \
             -c:v libx264 \
@@ -44,7 +44,7 @@ for mpg_file in "$SOURCE_DIR"/*.MPG; do
             -movflags +faststart \
             -y \
             "$output_file"
-        
+
         if [ $? -eq 0 ]; then
             # Get file sizes for comparison
             original_size=$(du -h "$mpg_file" | cut -f1)
@@ -53,7 +53,7 @@ for mpg_file in "$SOURCE_DIR"/*.MPG; do
         else
             echo "  ✗ Failed to convert $filename"
         fi
-        
+
         echo ""
     fi
 done
