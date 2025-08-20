@@ -17,3 +17,7 @@ ENV PYTHONPATH=/app
 
 # Default command (no-op for development)
 CMD ["python", "-c", "print('🏉 Rugby pipeline container ready'); exit(0)"]
+
+LABEL org.opencontainers.image.vendor="Biasware LLC" \
+      org.opencontainers.image.licenses="Proprietary" \
+      org.opencontainers.image.title="Rugby Pipeline"

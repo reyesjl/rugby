@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# Copyright (c) 2025 Biasware LLC
+# Proprietary and Confidential. All Rights Reserved.
+# This file is the sole property of Biasware LLC.
+# Unauthorized use, distribution, or reverse engineering is prohibited.
+
 """
 Build master video index specifically for Tuesday session MP4 videos
 This creates a searchable index for the demo focused on tuesday_session_08_06_2025_mp4
