@@ -6,7 +6,7 @@
 video_processing:
   sources:
     - type: "linux_desktop"
-      path: "/home/benn/CODE/RUGBY/rugby/input_media/08182025"
+      path: "./data/raw/videos/test_partition"
       watch_patterns: ["mpg", "mov", "avi", "mkv"]
 
   conversion:
@@ -19,10 +19,11 @@ video_processing:
     parallel_workers: 4
 
   transcription:
-    model_size: "large"
+    model_size: "tiny"
     language: "en"
     output_dir: "./data/derived/transcripts"
     preserve_tree: true
+    device: "cpu"
 
   indexing:
     ai_provider: "openai"

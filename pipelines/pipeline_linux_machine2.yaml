@@ -23,6 +23,7 @@ video_processing:
     language: "en"
     output_dir: "./data/derived/transcripts"
     preserve_tree: true
+    device: "cuda"
 
   indexing:
     ai_provider: "openai"

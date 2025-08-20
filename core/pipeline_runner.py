@@ -4,15 +4,62 @@
 # Unauthorized use, distribution, or reverse engineering is prohibited.
 
 import logging
-import os  # NEW
+import os
 import subprocess
 from typing import Optional
 
 from core.pipeline_models import VideoProcessingConfig
 from ingest.video_finder import find_video_files
+import time
 
 # Use module-level logger; logging configured in CLI
 logger = logging.getLogger(__name__)
+
+def time_function(name: str, func, *args, **kwargs):
+    """
+    Times the execution of a function in milliseconds.
+
+    Args:
+        func (callable): The function to time.
+        *args: Positional arguments for the function.
+        **kwargs: Keyword arguments for the function.
+
+    Returns:
+        tuple: (result, elapsed_ms)
+            result: The return value of the function.
+    """
+    #TODO We should probably delete this at the end?
+    start = time.time()
+    result = func(*args, **kwargs)
+    end = time.time()
+    elapsed_ms = (end - start) * 1000
+    logger.debug(f"Stage: {name} took {elapsed_ms:.2f} ms")
+    return result
+
+def convert_mp4_to_wav(video_file: str) -> str:
+    """Convert an MP4 video file to a WAV audio file using FFmpeg.
+    Args:
+        video_file (str): Path to the input MP4 video file. 
+    Returns:
+        str: Path to the output WAV audio file.
+    """
+    if not video_file.lower().endswith(".mp4"):
+        raise ValueError("Input file must be an MP4 video file.")
+    
+    audio_file = video_file[:-3] + "wav"
+    logger.debug(f"Extracting audio to: {audio_file}")
+
+    os.makedirs(os.path.dirname(audio_file), exist_ok=True)
+
+    subprocess.run([
+        "ffmpeg",
+        "-y",  # Overwrite output files without asking
+        "-i", video_file,
+        "-ar", "16000",
+        "-ac", "1",
+        audio_file
+    ])
+    return audio_file
 
 
 class PipelineRunner:
@@ -47,9 +94,9 @@ class PipelineRunner:
         logger.info("Pipeline ready. Proceeding with discovered video files.")
 
         logger.info("Converting Video Files...")
-        converted_files = self.convert_videos(all_video_files)
+        converted_files = time_function("Video Conversion", self.convert_videos, all_video_files)
         logger.info("Transcribing Video Files...")
-        self.transcribe_to_srt(converted_files)
+        time_function("Video Transcription", self.transcribe_to_srt, converted_files)
 
     def convert_videos(self, video_files: list[str]) -> list[str]:
         """Convert videos using FFmpeg configuration."""
@@ -154,17 +201,22 @@ class PipelineRunner:
 
             os.makedirs(srt_out_dir, exist_ok=True)
 
+            audio_file = convert_mp4_to_wav(video_file)
+            logger.debug(f"Extracting audio to: {audio_file}")
+
             whisper_cmd = [
                 "whisper",
                 "--model",
                 transcription_config.model_size,
+                "--device",
+                transcription_config.device,
                 "--language",
                 transcription_config.language,
                 "--output_format",
                 "srt",
                 "--output_dir",
                 srt_out_dir,
-                video_file,
+                audio_file,
             ]
 
             logger.debug(f"Running Whisper command: {' '.join(whisper_cmd)}")
@@ -177,6 +229,8 @@ class PipelineRunner:
                 logger.debug(f"Generated SRT file: {srt_file}")
             except subprocess.CalledProcessError as e:
                 logger.error(f"Whisper failed for {video_file}: {e.stderr.decode()}")
+
+            os.remove(audio_file)  # Clean up audio file after transcription
 
     def build_index(self, video_files: list[str]) -> None:
         """Build searchable index using AI configuration."""

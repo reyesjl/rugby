@@ -260,10 +260,12 @@ class TranscriptionConfig:
         self.language: str = transcription_config.get("language", "en")
         self.output_dir: str = transcription_config.get("output_dir", "./transcripts")
         self.preserve_tree: bool = transcription_config.get("preserve_tree", True)
+        self.device: str = transcription_config.get("device", "cuda")
 
     def __str__(self) -> str:
         return (
             f"  Model Size : {self.model_size}\n"
+            f"  Device     : {self.device}\n"
             f"  Language   : {self.language}\n"
             f"  Output Dir : {self.output_dir}\n"
             f"  Preserve   : {self.preserve_tree}"
@@ -273,13 +275,13 @@ class TranscriptionConfig:
         return _omit_empty(
             {
                 "model_size": self.model_size,
+                "device": self.device,
                 "language": self.language,
                 "output_dir": self.output_dir,
                 "preserve_tree": self.preserve_tree,
             }
         )
-
-
+    
 # ------------------------
 # Container Model
 # ------------------------
