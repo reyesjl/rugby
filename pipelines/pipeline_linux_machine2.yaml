@@ -6,8 +6,8 @@
 video_processing:
   sources:
     - type: "linux_desktop"
-      path: "/home/reyesjl/projects/rugby/tuesday_session_08_06_2025_mp4"
-      watch_patterns: ["MPG", "mpg"]
+      path: "./data/raw/videos/tuesday_session_08_06_2025_mp4"
+  watch_patterns: ["mp4", "MPG", "mpg"]
 
   conversion:
     ffmpeg:
@@ -18,7 +18,23 @@ video_processing:
       audio_bitrate: "128k"
     parallel_workers: 4
 
+  transcription:
+    model_size: "large"
+    language: "en"
+    output_dir: "./data/derived/transcripts"
+    preserve_tree: true
+
   indexing:
     ai_provider: "openai"
     model: "gpt-4o-mini"
     batch_size: 10
+    prompt_model:
+      system: |
+        You are a video editor AI. Your job is to generate video sequences from clips based on user requests.
+      user: |
+        {user_request}
+      instructions: |
+        Use the available clips and context to create a sequence plan. Consider narrative flow, pacing, and the user's intent.
+      examples:
+        - user: "Create a highlight reel of best tackles."
+          assistant: "{...example JSON output...}"

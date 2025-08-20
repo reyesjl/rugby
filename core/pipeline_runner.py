@@ -4,7 +4,9 @@
 # Unauthorized use, distribution, or reverse engineering is prohibited.
 
 import logging
+import os  # NEW
 import subprocess
+from typing import Optional
 
 from core.pipeline_models import VideoProcessingConfig
 from ingest.video_finder import find_video_files
@@ -45,7 +47,9 @@ class PipelineRunner:
         logger.info("Pipeline ready. Proceeding with discovered video files.")
 
         logger.info("Converting Video Files...")
-        self.convert_videos(all_video_files)
+        converted_files = self.convert_videos(all_video_files)
+        logger.info("Transcribing Video Files...")
+        self.transcribe_to_srt(converted_files)
 
     def convert_videos(self, video_files: list[str]) -> list[str]:
         """Convert videos using FFmpeg configuration."""
@@ -110,6 +114,69 @@ class PipelineRunner:
                 logger.error(f"FFmpeg failed for {video_file}: {e.stderr.decode()}")
 
         return files_to_index
+
+    def transcribe_to_srt(self, video_files: list[str]) -> None:
+        """Transcribe video files to SRT format using Whisper model."""
+        transcription_config = self.config.transcription_config
+        logger.info(
+            f"Transcribing videos to SRT using Whisper model (Size: {transcription_config.model_size}, Language: {transcription_config.language})..."
+        )
+
+        def find_source_base(path: str) -> Optional[str]:
+            for src in self.config.video_sources.sources:
+                if path.startswith(src.path):
+                    return src.path
+            return None
+
+        for video_file in video_files:
+            # Determine output path
+            if transcription_config.output_dir:
+                base = (
+                    find_source_base(video_file)
+                    if transcription_config.preserve_tree
+                    else None
+                )
+                if base:
+                    rel = os.path.relpath(video_file, base)
+                else:
+                    rel = os.path.basename(video_file)
+                rel_no_ext = os.path.splitext(rel)[0]
+                srt_out_dir = os.path.join(
+                    transcription_config.output_dir, os.path.dirname(rel_no_ext)
+                )
+                srt_file = os.path.join(
+                    transcription_config.output_dir, rel_no_ext + ".srt"
+                )
+            else:
+                # Fallback: next to the video
+                srt_out_dir = os.path.dirname(video_file)
+                srt_file = video_file.rsplit(".", 1)[0] + ".srt"
+
+            os.makedirs(srt_out_dir, exist_ok=True)
+
+            whisper_cmd = [
+                "whisper",
+                "--model",
+                transcription_config.model_size,
+                "--language",
+                transcription_config.language,
+                "--output_format",
+                "srt",
+                "--output_dir",
+                srt_out_dir,
+                video_file,
+            ]
+
+            logger.debug(f"Running Whisper command: {' '.join(whisper_cmd)}")
+            try:
+                subprocess.run(
+                    whisper_cmd,
+                    check=True,
+                    capture_output=True,
+                )
+                logger.debug(f"Generated SRT file: {srt_file}")
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Whisper failed for {video_file}: {e.stderr.decode()}")
 
     def build_index(self, video_files: list[str]) -> None:
         """Build searchable index using AI configuration."""

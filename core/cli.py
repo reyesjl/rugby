@@ -78,7 +78,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     # Configure logging for the application
-    configure_logging()
+    configure_logging(level=logging.DEBUG)
 
     if getattr(args, "status", False):
         return cmd_status(args)

@@ -235,6 +235,52 @@ class IndexingConfig:
 
 
 # ------------------------
+# Transcription Model Configuration
+# ------------------------
+class TranscriptionConfig:
+    """
+    Configuration for the transcription process, including model size and language settings.
+    Initialized from a configuration dictionary.
+    """
+
+    def __init__(self, transcription_config: Optional[dict] = None):
+        """
+        Initialize the transcription configuration.
+
+        Args:
+            transcription_config (Optional[dict]): A dictionary containing transcription settings.
+                Supported keys:
+                    - model_size (str): The size of the transcription model to use (default: "base").
+                    - language (str): The language code for transcription (default: "en").
+                    - output_dir (str): The directory where transcripts will be saved (default: "./transcripts").
+                    - preserve_tree (bool): Whether to preserve the folder structure under output_dir (default: True).
+        """
+        transcription_config = transcription_config or {}
+        self.model_size: str = transcription_config.get("model_size", "base")
+        self.language: str = transcription_config.get("language", "en")
+        self.output_dir: str = transcription_config.get("output_dir", "./transcripts")
+        self.preserve_tree: bool = transcription_config.get("preserve_tree", True)
+
+    def __str__(self) -> str:
+        return (
+            f"  Model Size : {self.model_size}\n"
+            f"  Language   : {self.language}\n"
+            f"  Output Dir : {self.output_dir}\n"
+            f"  Preserve   : {self.preserve_tree}"
+        )
+
+    def to_dict(self) -> dict:
+        return _omit_empty(
+            {
+                "model_size": self.model_size,
+                "language": self.language,
+                "output_dir": self.output_dir,
+                "preserve_tree": self.preserve_tree,
+            }
+        )
+
+
+# ------------------------
 # Container Model
 # ------------------------
 class VideoProcessingConfig:
@@ -250,12 +296,15 @@ class VideoProcessingConfig:
         source_config: list[dict] = processing_config.get("sources", [])
         conversion_config: dict = processing_config.get("conversion", {})
         indexing_config: dict = processing_config.get("indexing", {})
-
+        transcription_config: dict = processing_config.get("transcription", {})
         self.video_sources: VideoSourcesConfiguration = VideoSourcesConfiguration(
             source_config
         )
         self.conversion_config: ConversionConfig = ConversionConfig(conversion_config)
         self.indexing_config: IndexingConfig = IndexingConfig(indexing_config)
+        self.transcription_config: TranscriptionConfig = TranscriptionConfig(
+            transcription_config
+        )
 
     def __str__(self) -> str:
         # Compact, machine-readable, omits empty values
@@ -267,5 +316,6 @@ class VideoProcessingConfig:
                 "sources": self.video_sources.to_list(),
                 "conversion": self.conversion_config.to_dict(),
                 "indexing": self.indexing_config.to_dict(),
+                "transcription": self.transcription_config.to_dict(),
             }
         )

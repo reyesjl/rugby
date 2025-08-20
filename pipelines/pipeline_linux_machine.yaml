@@ -18,6 +18,12 @@ video_processing:
       audio_bitrate: "128k"
     parallel_workers: 4
 
+  transcription:
+    model_size: "large"
+    language: "en"
+    output_dir: "./data/derived/transcripts"
+    preserve_tree: true
+
   indexing:
     ai_provider: "openai"
     model: "gpt-4o-mini"
