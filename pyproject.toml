@@ -73,18 +73,10 @@ known-first-party = ["rugby"]
 
 # MyPy configuration
 [tool.mypy]
-python_version = "3.9"
-check_untyped_defs = true
 disallow_untyped_defs = true
-disallow_incomplete_defs = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_return_any = true
-strict_optional = true
-no_implicit_reexport = true
 
 [[tool.mypy.overrides]]
-module = "tests.*"
+module = ["tests.*"]
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]

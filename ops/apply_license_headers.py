@@ -62,9 +62,10 @@ def iter_files(base: Path, exts: set[str]) -> Iterable[Path]:
             yield p
 
 
-def main() -> int:
+def update_headers(root: Path) -> int:
+    """Apply headers under a specific root, returns number of files changed."""
     changed = 0
-    for file_path in iter_files(ROOT, INCLUDE_EXTS):
+    for file_path in iter_files(root, INCLUDE_EXTS):
         try:
             original = file_path.read_text(encoding="utf-8")
         except Exception:
@@ -75,6 +76,11 @@ def main() -> int:
             changed += 1
             print(f"Updated header: {file_path}")
 
+    return changed
+
+
+def main() -> int:
+    changed = update_headers(ROOT)
     print(f"\nLicense header update complete. Files changed: {changed}")
     return 0
 

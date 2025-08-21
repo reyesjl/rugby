@@ -44,6 +44,9 @@ def find_video_files(
                 file.lower().endswith(fmt) for fmt in extensions
             ):
                 video_files.append(file_path)
+            else:
+                if os.path.isfile(file_path):
+                    logger.debug(f"Skipping unsupported video file: {file}")
 
     return sorted(video_files)
 

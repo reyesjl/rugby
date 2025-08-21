@@ -281,7 +281,8 @@ class TranscriptionConfig:
                 "preserve_tree": self.preserve_tree,
             }
         )
-    
+
+
 # ------------------------
 # Container Model
 # ------------------------
