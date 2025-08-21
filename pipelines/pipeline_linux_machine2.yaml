@@ -7,7 +7,7 @@ video_processing:
   sources:
     - type: "linux_desktop"
       path: "./data/raw/videos/tuesday_session_08_06_2025_mp4"
-  watch_patterns: ["mp4", "MPG", "mpg"]
+      watch_patterns: ["mp4", "MPG", "mpg"]
 
   conversion:
     ffmpeg:

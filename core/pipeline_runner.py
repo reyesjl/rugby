@@ -7,6 +7,7 @@ import logging
 import os
 import subprocess
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Optional, TypeVar
 
 from core.pipeline_models import VideoProcessingConfig
@@ -36,6 +37,28 @@ def time_function(name: str, func: Callable[..., T], *args: Any, **kwargs: Any) 
     elapsed_ms = (end - start) * 1000
     logger.debug(f"Stage: {name} took {elapsed_ms:.2f} ms")
     return result
+
+
+def pause_with_abort(stage: str, seconds: int = 10) -> None:
+    """Pause before a stage, auto-continue after N seconds, allow Ctrl+C to abort.
+
+    Args:
+        stage: Human-friendly stage name for logs.
+        seconds: Seconds to wait before auto-continue.
+    """
+    seconds = max(0, int(seconds))
+    if seconds == 0:
+        return
+    logger.info(
+        f"About to start {stage}. Auto-continue in {seconds}s. Press Ctrl+C to abort."
+    )
+    try:
+        for remaining in range(seconds, 0, -1):
+            logger.info(f"Continuing in {remaining}s... (Ctrl+C to abort)")
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logger.info(f"Aborted by user before {stage}. Exiting.")
+        raise SystemExit(130) from None
 
 
 def convert_mp4_to_wav(video_file: str, output_dir: Optional[str] = None) -> str:
@@ -109,10 +132,16 @@ class PipelineRunner:
         logger.info(f"Total video files found: {len(all_video_files)}")
         logger.info("Pipeline ready. Proceeding with discovered video files.")
 
+        # Pause before starting conversion
+        pause_with_abort("video conversion", seconds=5)
+
         logger.info("Converting Video Files...")
         converted_files = time_function(
             "Video Conversion", self.convert_videos, all_video_files
         )
+
+        # Pause before starting transcription
+        pause_with_abort("video transcription", seconds=5)
         logger.info("Transcribing Video Files...")
         time_function("Video Transcription", self.transcribe_to_srt, converted_files)
 
@@ -128,28 +157,23 @@ class PipelineRunner:
         logger.info(
             f"   Audio codec: {ffmpeg_config.audio_codec} ({ffmpeg_config.audio_bitrate})"
         )
-        # TODO: Parallel processing?
-        logger.info(f"   Parallel workers: {parallel_workers}")
+        # Parallel processing (threads are fine since we spawn subprocesses)
+        workers = max(1, int(parallel_workers or 1))
+        logger.info(f"   Parallel workers: {workers}")
 
-        files_to_index: list[str] = []
-        for video_file in video_files:
-            extension = video_file.split(".")[-1].lower()
-            if extension == "mp4":
-                # Passthrough mp4 files
-                files_to_index.append(video_file)
-                logger.debug(f"Not reformating mp4 video: {video_file}")
-                continue
+        def process_one(vpath: str) -> Optional[str]:
+            ext = os.path.splitext(vpath)[1].lower().lstrip(".")
+            if ext == "mp4":
+                logger.debug(f"Not reformatting mp4 video: {vpath}")
+                return vpath
 
-            logger.debug(f"Processing video: {video_file}")
-
-            # Build output filename (e.g., add '_converted' before extension)
-            output_file = video_file.rsplit(".", 1)[0] + "_converted.mp4"
-
+            logger.debug(f"Processing video: {vpath}")
+            output_file = vpath.rsplit(".", 1)[0] + "_converted.mp4"
             ffmpeg_cmd = [
                 "ffmpeg",
                 "-y",
                 "-i",
-                video_file,
+                vpath,
                 "-c:v",
                 ffmpeg_config.video_codec,
                 "-crf",
@@ -162,20 +186,34 @@ class PipelineRunner:
                 ffmpeg_config.audio_bitrate,
                 output_file,
             ]
-
             logger.debug(f"Running FFmpeg command: {' '.join(ffmpeg_cmd)}")
             try:
-                subprocess.run(
-                    ffmpeg_cmd,
-                    check=True,
-                    capture_output=True,
-                )
+                subprocess.run(ffmpeg_cmd, check=True, capture_output=True)
                 logger.debug(f"Converted video: {output_file}")
-                files_to_index.append(output_file)
+                return output_file
             except subprocess.CalledProcessError as e:
-                logger.error(f"FFmpeg failed for {video_file}: {e.stderr.decode()}")
+                err = e.stderr.decode(errors="ignore") if e.stderr else str(e)
+                logger.error(f"FFmpeg failed for {vpath}: {err}")
+                return None
 
-        return files_to_index
+        # Execute conversions
+        results: list[str] = []
+        if workers == 1 or len(video_files) <= 1:
+            for vf in video_files:
+                out = process_one(vf)
+                if out:
+                    results.append(out)
+        else:
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                future_map = {
+                    executor.submit(process_one, vf): vf for vf in video_files
+                }
+                for fut in as_completed(future_map):
+                    out = fut.result()
+                    if out:
+                        results.append(out)
+
+        return results
 
     def transcribe_to_srt(self, video_files: list[str]) -> None:
         """Transcribe video files to SRT format using Whisper model."""

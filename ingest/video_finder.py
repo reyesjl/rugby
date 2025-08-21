@@ -26,14 +26,16 @@ def find_video_files(
         List of video file paths
     """
     video_files = []
-    extensions = [
-        pattern for pattern in watch_patterns if pattern in SUPPORTED_VIDEO_FORMATS
-    ]
+
+    # Normalize patterns: case-insensitive and allow optional leading dot
+    normalized_patterns = [p.lower().lstrip(".") for p in (watch_patterns or [])]
+    extensions = [p for p in normalized_patterns if p in SUPPORTED_VIDEO_FORMATS]
 
     if recursive:
         for root, _dirs, files in os.walk(directory):
             for file in files:
-                if any(file.lower().endswith(fmt) for fmt in extensions):
+                # Match using .ext to avoid false positives (e.g., filename ending with 'mpg' as text)
+                if any(file.lower().endswith(f".{fmt}") for fmt in extensions):
                     video_files.append(os.path.join(root, file))
                 else:
                     logger.debug(f"Skipping unsupported video file: {file}")
@@ -41,7 +43,7 @@ def find_video_files(
         for file in os.listdir(directory):
             file_path = os.path.join(directory, file)
             if os.path.isfile(file_path) and any(
-                file.lower().endswith(fmt) for fmt in extensions
+                file.lower().endswith(f".{fmt}") for fmt in extensions
             ):
                 video_files.append(file_path)
             else:
@@ -63,4 +65,4 @@ def validate_video_file(file_path: str) -> bool:
     if not os.path.exists(file_path):
         return False
 
-    return any(file_path.lower().endswith(fmt) for fmt in SUPPORTED_VIDEO_FORMATS)
+    return any(file_path.lower().endswith(f".{fmt}") for fmt in SUPPORTED_VIDEO_FORMATS)
