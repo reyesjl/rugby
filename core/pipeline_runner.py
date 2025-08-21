@@ -312,7 +312,23 @@ class PipelineRunner:
         return transcribed_files
 
     def build_index(self, video_files: list[str], transcribed_files: list[str]) -> None:
-        """Build searchable index using AI configuration."""
+        """
+        Build a searchable index from video and transcription files using AI configuration.
+
+        This method processes each transcribed file (typically SRT format), generates a summary using
+        the configured AI provider and model, and then vectorizes and stores the summary alongside the
+        corresponding video file. The resulting index enables efficient semantic search and retrieval
+        of video content based on the generated summaries.
+
+        Note: It is required that the indices of the video_files and transcribed_files lists match.
+
+        Args:
+            video_files (list[str]): List of paths to video files. Must match the order and length of transcribed_files.
+            transcribed_files (list[str]): List of paths to transcription files (e.g., SRT files), one per video.
+
+        Raises:
+            ValueError: If the number of video files and transcription files do not match.
+        """
 
         if len(video_files) != len(transcribed_files):
             raise ValueError("Mismatched video and transcription file counts.")

@@ -1,4 +1,9 @@
-
+"""
+index_manager.py
+----------------
+This module provides functions for summarizing rugby training session transcripts using OpenAI models.
+Vectorizing summaries, storing them in a PostgreSQL database with pgvector, and querying videos by semantic similarity.
+"""
 
 import logging
 import os
@@ -25,6 +30,19 @@ openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 vector_model = SentenceTransformer("BAAI/bge-small-en")
 
 def summarize_srt_file(configuration: IndexingConfig, srt_file: str) -> str:
+    """
+    Summarizes a rugby training session transcript from an SRT file using an OpenAI model.
+
+    Args:
+        configuration (IndexingConfig): Configuration object specifying AI provider, model, and prompt details.
+        srt_file (str): Path to the SRT file containing the transcript.
+
+    Returns:
+        str: A summary of the rugby training session.
+
+    Raises:
+        ValueError: If the AI provider is unsupported or the OpenAI API returns no/empty response.
+    """
     if configuration.ai_provider != "openai":
         #TODO: More providers?
         raise ValueError(f"Unsupported AI provider: {configuration.ai_provider}. Only 'openai' is supported.")
@@ -67,6 +85,13 @@ def summarize_srt_file(configuration: IndexingConfig, srt_file: str) -> str:
 
 
 def vectorize_and_store_summary(summary: str, video_file_path: str):
+    """
+    Vectorizes a summary using a sentence transformer and stores it in the PostgreSQL database.
+
+    Args:
+        summary (str): The summary text to vectorize.
+        video_file_path (str): The file path of the associated video.
+    """
     logger.debug(f"Vectorizing summary for video: {video_file_path}")
     summary_embedding: list = vector_model.encode(summary).tolist()
 
@@ -97,6 +122,16 @@ def vectorize_and_store_summary(summary: str, video_file_path: str):
 
 
 def query_videos(query: str, result_limit: int = 5) -> list[str]:
+    """
+    Queries the database for videos most semantically similar to the input query using vector search.
+
+    Args:
+        query (str): The search query string.
+        result_limit (int): Maximum number of results to return.
+
+    Returns:
+        list[str]: List of video file paths ranked by similarity to the query.
+    """
     logger.debug(f"Querying videos with query: {query} and limit: {result_limit}")
     query_embedding = vector_model.encode(query).tolist()
 
