@@ -65,3 +65,16 @@ def parse_srt_with_timestamps(srt_path: str) -> list[dict]:
             )
 
     return segments
+
+def load_srt_text(srt_path: str) -> str:
+    """Load the text content from an SRT file.
+
+    Args:
+        srt_path: Path to the SRT transcript file
+
+    Returns:
+        The combined text content of all segments
+    """
+    segments = parse_srt_with_timestamps(srt_path)
+    return " ".join(segment["text"] for segment in segments)
+
