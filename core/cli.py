@@ -6,13 +6,15 @@
 """Rugby CLI entry point."""
 
 import argparse
-import sys
 import logging
+import sys
 from typing import Optional
+
 from core.pipeline_models import VideoProcessingConfig
 from core.pipeline_runner import PipelineRunner
 
 logger = logging.getLogger(__name__)
+
 
 def create_parser() -> argparse.ArgumentParser:
     """Create the main argument parser."""
@@ -20,14 +22,15 @@ def create_parser() -> argparse.ArgumentParser:
         prog="rugby-cli",
         description="Rugby video processing pipeline CLI",
     )
-    
+
     parser.add_argument(
         "--config",
         required=False,
         help="Launch Provided Pipeline",
     )
     parser.add_argument(
-        "-v", "--version",
+        "-v",
+        "--version",
         action="store_true",
         help="Show rugby-cli version and exit",
     )
@@ -55,9 +58,10 @@ def cmd_status(args: argparse.Namespace) -> int:
 def load_yaml(config_path: str) -> None:
     """Load YAML configuration file."""
     import yaml
-    with open(config_path, 'r') as file:
+
+    with open(config_path) as file:
         config = yaml.safe_load(file)
-    video_config = VideoProcessingConfig(config.get('video_processing', {}))
+    video_config = VideoProcessingConfig(config.get("video_processing", {}))
     # logger.debug("Loaded config: %s", video_config)
     pipeline_runner = PipelineRunner(video_config)
     pipeline_runner.run()
@@ -65,10 +69,7 @@ def load_yaml(config_path: str) -> None:
 
 def configure_logging(level: int = logging.INFO) -> None:
     """Initialize application logging."""
-    logging.basicConfig(
-        level=level,
-        format='[%(levelname)s] %(message)s'
-    )
+    logging.basicConfig(level=level, format="[%(levelname)s] %(message)s")
 
 
 def main(argv: Optional[list[str]] = None) -> int:
@@ -77,7 +78,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     # Configure logging for the application
-    configure_logging()
+    configure_logging(level=logging.DEBUG)
 
     if getattr(args, "status", False):
         return cmd_status(args)
@@ -91,6 +92,7 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     load_yaml(args.config)
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -10,27 +10,27 @@ echo "Converting MPG files to MP4 for web playback..."
 convert_directory() {
     local source_dir="$1"
     local target_dir="${source_dir}_mp4"
-    
+
     if [ ! -d "$source_dir" ]; then
         echo "Directory $source_dir not found, skipping..."
         return
     fi
-    
+
     echo ""
     echo "Converting directory: $source_dir -> $target_dir"
-    
+
     # Create target directory
     mkdir -p "$target_dir"
-    
+
     # Count total files
     total_files=$(find "$source_dir" -name "*.MPG" -o -name "*.mpg" | wc -l)
     echo "Found $total_files MPG files to convert"
-    
+
     if [ $total_files -eq 0 ]; then
         echo "No MPG files found in $source_dir"
         return
     fi
-    
+
     # Convert each MPG file
     current=0
     for mpg_file in "$source_dir"/*.MPG "$source_dir"/*.mpg; do
@@ -39,15 +39,15 @@ convert_directory() {
             filename=$(basename "$mpg_file")
             filename_no_ext="${filename%.*}"
             mp4_file="$target_dir/${filename_no_ext}.mp4"
-            
+
             echo "[$current/$total_files] Converting: $filename"
-            
+
             # Skip if already converted
             if [ -f "$mp4_file" ]; then
                 echo "  -> Already exists, skipping"
                 continue
             fi
-            
+
             # Convert with ffmpeg
             # Using web-optimized settings for browser compatibility
             ffmpeg -i "$mpg_file" \
@@ -60,7 +60,7 @@ convert_directory() {
                 -y \
                 "$mp4_file" \
                 2>/dev/null
-            
+
             if [ $? -eq 0 ]; then
                 echo "  -> Success: ${filename_no_ext}.mp4"
             else
@@ -74,7 +74,7 @@ convert_directory() {
 echo "Starting conversion process..."
 
 convert_directory "pre_sort_broll_01"
-convert_directory "pre_sort_broll_02" 
+convert_directory "pre_sort_broll_02"
 convert_directory "tuesday_session_08_06_2025"
 
 echo ""

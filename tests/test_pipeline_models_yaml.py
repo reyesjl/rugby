@@ -4,11 +4,19 @@
 # Unauthorized use, distribution, or reverse engineering is prohibited.
 
 import tempfile
+
 import yaml
+
 from core.pipeline_models import (
-    ConversionConfig, FFmpegConfig, IndexingConfig, VideoProcessingConfig,
-    VideoSourceType, VideoSource, VideoSourcesConfiguration
+    ConversionConfig,
+    FFmpegConfig,
+    IndexingConfig,
+    VideoProcessingConfig,
+    VideoSource,
+    VideoSourcesConfiguration,
+    VideoSourceType,
 )
+
 
 def test_prompt_model_in_indexing_config():
     prompt_model_dict = {
@@ -17,14 +25,14 @@ def test_prompt_model_in_indexing_config():
         "instructions": "Use the available clips.",
         "examples": [
             {"user": "Create a highlight reel.", "assistant": "{...}"},
-            {"user": "Show all tries.", "assistant": "{...}"}
-        ]
+            {"user": "Show all tries.", "assistant": "{...}"},
+        ],
     }
     indexing_dict = {
         "ai_provider": "openai",
         "model": "gpt-4o-mini",
         "batch_size": 10,
-        "prompt_model": prompt_model_dict
+        "prompt_model": prompt_model_dict,
     }
     config = IndexingConfig(indexing_dict)
     pm = config.prompt_model
@@ -35,14 +43,13 @@ def test_prompt_model_in_indexing_config():
     assert pm.examples[0]["user"] == "Create a highlight reel."
     assert pm.examples[1]["assistant"] == "{...}"
 
+
 def test_prompt_model_in_video_processing_config():
     prompt_model_dict = {
         "system": "System message.",
         "user": "User message.",
         "instructions": "Instructions here.",
-        "examples": [
-            {"user": "Prompt1", "assistant": "Resp1"}
-        ]
+        "examples": [{"user": "Prompt1", "assistant": "Resp1"}],
     }
     config_dict = {
         "sources": [],
@@ -51,8 +58,8 @@ def test_prompt_model_in_video_processing_config():
             "ai_provider": "openai",
             "model": "gpt-4o-mini",
             "batch_size": 10,
-            "prompt_model": prompt_model_dict
-        }
+            "prompt_model": prompt_model_dict,
+        },
     }
     vpc = VideoProcessingConfig(config_dict)
     pm = vpc.indexing_config.prompt_model
@@ -61,10 +68,13 @@ def test_prompt_model_in_video_processing_config():
     assert pm.instructions == "Instructions here."
     assert isinstance(pm.examples, list)
     assert pm.examples[0]["assistant"] == "Resp1"
+
+
 def test_video_source_type_enum_values():
     assert VideoSourceType.LINUX_DESKTOP.value == "linux_desktop"
     assert VideoSourceType.WINDOWS_DESKTOP.value == "windows_desktop"
     assert VideoSourceType.NETWORK_HOST.value == "network_host"
+
 
 def test_video_source_init_and_str():
     config = {"type": "linux_desktop", "path": "/tmp/data", "watch_patterns": ["mp4"]}
@@ -74,20 +84,23 @@ def test_video_source_init_and_str():
     assert src.watch_patterns == ["mp4"]
     assert "linux_desktop" in str(src)
 
+
 def test_video_sources_configuration_empty():
     config = VideoSourcesConfiguration([])
     assert isinstance(config.sources, list)
     assert len(config.sources) == 0
 
+
 def test_video_sources_configuration_multiple():
     configs = [
         {"type": "linux_desktop", "path": "/a"},
-        {"type": "windows_desktop", "path": "/b"}
+        {"type": "windows_desktop", "path": "/b"},
     ]
     vsc = VideoSourcesConfiguration(configs)
     assert len(vsc.sources) == 2
     assert vsc.sources[0].source_type == VideoSourceType.LINUX_DESKTOP
     assert vsc.sources[1].source_type == VideoSourceType.WINDOWS_DESKTOP
+
 
 def test_ffmpeg_config_defaults():
     ffmpeg = FFmpegConfig({})
@@ -97,16 +110,19 @@ def test_ffmpeg_config_defaults():
     assert ffmpeg.audio_codec == "aac"
     assert ffmpeg.audio_bitrate == "128k"
 
+
 def test_conversion_config_defaults():
     conv = ConversionConfig({})
     assert isinstance(conv.ffmpeg, FFmpegConfig)
     assert conv.parallel_workers == 1
+
 
 def test_indexing_config_defaults():
     idx = IndexingConfig({})
     assert idx.ai_provider == "openai"
     assert idx.model == "gpt-4o-mini"
     assert idx.batch_size == 10
+
 
 def test_video_processing_config_defaults():
     vpc = VideoProcessingConfig({})
@@ -117,9 +133,21 @@ def test_video_processing_config_defaults():
 
 def test_video_sources_configuration():
     sources = [
-        {"type": "linux_desktop", "path": "/tmp/input1", "watch_patterns": ["MPG", "mpg"]},
-        {"type": "network_host", "path": "/tmp/input2", "watch_patterns": ["MP4", "mp4"]},
-        {"type": "windows_desktop", "path": "/tmp/input3", "watch_patterns": ["MPG", "mpg"]}
+        {
+            "type": "linux_desktop",
+            "path": "/tmp/input1",
+            "watch_patterns": ["MPG", "mpg"],
+        },
+        {
+            "type": "network_host",
+            "path": "/tmp/input2",
+            "watch_patterns": ["MP4", "mp4"],
+        },
+        {
+            "type": "windows_desktop",
+            "path": "/tmp/input3",
+            "watch_patterns": ["MPG", "mpg"],
+        },
     ]
     config = VideoSourcesConfiguration(sources)
     assert isinstance(config.sources, list)
@@ -141,7 +169,7 @@ def test_ffmpeg_config_parsing():
         "crf": 20,
         "preset": "slow",
         "audio_codec": "mp3",
-        "audio_bitrate": "192k"
+        "audio_bitrate": "192k",
     }
     ffmpeg_config = FFmpegConfig(ffmpeg_dict)
     assert ffmpeg_config.video_codec == "libx265"
@@ -150,6 +178,7 @@ def test_ffmpeg_config_parsing():
     assert ffmpeg_config.audio_codec == "mp3"
     assert ffmpeg_config.audio_bitrate == "192k"
 
+
 def test_conversion_config_parsing():
     conversion_dict = {
         "ffmpeg": {
@@ -157,9 +186,9 @@ def test_conversion_config_parsing():
             "crf": 23,
             "preset": "fast",
             "audio_codec": "aac",
-            "audio_bitrate": "128k"
+            "audio_bitrate": "128k",
         },
-        "parallel_workers": 4
+        "parallel_workers": 4,
     }
     conversion_config = ConversionConfig(conversion_dict)
     assert isinstance(conversion_config.ffmpeg, FFmpegConfig)
@@ -170,12 +199,9 @@ def test_conversion_config_parsing():
     assert conversion_config.ffmpeg.audio_bitrate == "128k"
     assert conversion_config.parallel_workers == 4
 
+
 def test_indexing_config_parsing():
-    indexing_dict = {
-        "ai_provider": "openai",
-        "model": "gpt-4o-mini",
-        "batch_size": 10
-    }
+    indexing_dict = {"ai_provider": "openai", "model": "gpt-4o-mini", "batch_size": 10}
     config = IndexingConfig(indexing_dict)
     assert config.ai_provider == "openai"
     assert config.model == "gpt-4o-mini"
@@ -185,16 +211,28 @@ def test_indexing_config_parsing():
     default_config = IndexingConfig({})
     assert default_config.ai_provider == "openai"
     assert default_config.model == "gpt-4o-mini"
-    
+
 
 def test_video_processing_config_from_yaml():
     with tempfile.TemporaryDirectory() as tmp_path:
         # Create a sample YAML config file
         config_dict = {
             "sources": [
-                {"type": "linux_desktop", "path": str(tmp_path + "/input1"), "watch_patterns": ["MPG", "mpg"]},
-                {"type": "network_host", "path": str(tmp_path + "/input2"), "watch_patterns": ["MP4", "mp4"]},
-                {"type": "windows_desktop", "path": str(tmp_path + "/input3"), "watch_patterns": ["MPG", "mpg"]}
+                {
+                    "type": "linux_desktop",
+                    "path": str(tmp_path + "/input1"),
+                    "watch_patterns": ["MPG", "mpg"],
+                },
+                {
+                    "type": "network_host",
+                    "path": str(tmp_path + "/input2"),
+                    "watch_patterns": ["MP4", "mp4"],
+                },
+                {
+                    "type": "windows_desktop",
+                    "path": str(tmp_path + "/input3"),
+                    "watch_patterns": ["MPG", "mpg"],
+                },
             ],
             "conversion": {
                 "ffmpeg": {
@@ -202,22 +240,22 @@ def test_video_processing_config_from_yaml():
                     "crf": 23,
                     "preset": "fast",
                     "audio_codec": "aac",
-                    "audio_bitrate": "128k"
+                    "audio_bitrate": "128k",
                 },
-                "parallel_workers": 4
+                "parallel_workers": 4,
             },
             "indexing": {
                 "ai_provider": "openai",
                 "model": "gpt-4o-mini",
-                "batch_size": 10
-            }
+                "batch_size": 10,
+            },
         }
         yaml_path = tmp_path + "/pipeline_test.yaml"
         with open(yaml_path, "w") as f:
             yaml.dump(config_dict, f)
 
         # Load the YAML file as would be done in production
-        with open(yaml_path, "r") as f:
+        with open(yaml_path) as f:
             loaded = yaml.safe_load(f)
 
         # Pass the loaded dict to VideoProcessingConfig

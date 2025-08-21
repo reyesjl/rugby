@@ -152,12 +152,12 @@ Desktop.ini
 $RECYCLE.BIN/
 
 # Project specific
-data/
-*.mp4
-*.mpg
-*.avi
-*.mov
-*.mkv
+# data/
+# *.mp4
+# *.mpg
+# *.avi
+# *.mov
+# *.mkv
 
 # Pre-commit
 .pre-commit-config.yaml.bak

@@ -42,4 +42,3 @@ select folder in $(ls -d $DESKTOP/*/ 2>/dev/null | xargs -n 1 basename); do
     echo "Ingest complete."
     break
 done
-

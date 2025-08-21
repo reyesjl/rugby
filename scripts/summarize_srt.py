@@ -3,9 +3,10 @@
 # This file is the sole property of Biasware LLC.
 # Unauthorized use, distribution, or reverse engineering is prohibited.
 
-import os
-from openai import OpenAI
 import json
+import os
+
+from openai import OpenAI
 
 # Directory with SRT files
 TRANSCRIPTS_DIR = "./transcripts"
@@ -17,9 +18,11 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Ensure output directory exists
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+
 def read_srt(file_path):
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         return f.read()
+
 
 def call_gpt_to_summarize(srt_text):
     prompt = f"""
@@ -51,25 +54,25 @@ SRT Transcript:
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
     )
-    
+
     content = response.choices[0].message.content
     if content is not None:
         print(f"GPT Response: {content[:200]}...")  # Debug: show first 200 chars
-        
+
         # Clean the response - remove markdown code blocks if present
         content = content.strip()
-        if content.startswith('```json'):
+        if content.startswith("```json"):
             content = content[7:]  # Remove ```json
-        if content.startswith('```'):
-            content = content[3:]   # Remove just ```
-        if content.endswith('```'):
+        if content.startswith("```"):
+            content = content[3:]  # Remove just ```
+        if content.endswith("```"):
             content = content[:-3]  # Remove closing ```
         content = content.strip()
-        
+
     else:
         print("GPT Response: None")
         content = "{}"
-    
+
     try:
         return json.loads(content)
     except json.JSONDecodeError as e:
@@ -79,10 +82,11 @@ SRT Transcript:
         return {
             "summary": content[:500] if content else "No summary available",
             "setting": "Unknown",
-            "participants": "Unknown", 
+            "participants": "Unknown",
             "key_moments": [],
-            "tone": "Unknown"
+            "tone": "Unknown",
         }
+
 
 def process_srt_files(max_files=None):
     processed_count = 0
@@ -94,7 +98,7 @@ def process_srt_files(max_files=None):
             srt_path = os.path.join(root, file)
             folder = os.path.basename(os.path.dirname(srt_path))
             base = os.path.splitext(file)[0]
-            
+
             # Create folder structure in summaries directory
             output_folder = os.path.join(OUTPUT_DIR, folder)
             os.makedirs(output_folder, exist_ok=True)
@@ -117,8 +121,9 @@ def process_srt_files(max_files=None):
                 processed_count += 1
             except Exception as e:
                 print(f"Failed on {file}: {e}")
-                
+
     print(f"Completed processing {processed_count} files total.")
+
 
 if __name__ == "__main__":
     # Process all files - no limit
