@@ -1,3 +1,8 @@
+# Copyright (c) 2025 Biasware LLC
+# Proprietary and Confidential. All Rights Reserved.
+# This file is the sole property of Biasware LLC.
+# Unauthorized use, distribution, or reverse engineering is prohibited.
+
 """Tests for indexing.srt_parser parsing function."""
 
 from indexing.srt_parser import load_srt_text, parse_srt_with_timestamps
