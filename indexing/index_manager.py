@@ -1,16 +1,14 @@
 
 
+import logging
 import os
 
 import psycopg
-
+from openai import OpenAI
 from sentence_transformers import SentenceTransformer
+
 from core.pipeline_models import IndexingConfig
 from indexing.srt_parser import load_srt_text
-
-from openai import OpenAI
-
-import logging
 
 #TODO: Where should these be defined? What should the host be?
 DB_USER="postgres"
@@ -62,7 +60,7 @@ def summarize_srt_file(configuration: IndexingConfig, srt_file: str) -> str:
     if not summary:
         raise ValueError("Empty summary returned from OpenAI API")
 
-    logger.debug(f"Summary generated")
+    logger.debug("Summary generated")
     logger.debug(f"Summary: {summary}")
 
     return response.choices[0].message.content

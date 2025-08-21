@@ -148,7 +148,7 @@ class PipelineRunner:
 
         # Pause before starting indexing
         pause_with_abort("video indexing", seconds=2)
-        logger.info(f"Indexing Transcribed Files...")
+        logger.info("Indexing Transcribed Files...")
         time_function("Video Indexing", self.build_index, converted_files, transcription_files)
         logger.info("Indexing completed successfully.")
 
@@ -313,10 +313,10 @@ class PipelineRunner:
 
     def build_index(self, video_files: list[str], transcribed_files: list[str]) -> None:
         """Build searchable index using AI configuration."""
-        
+
         if len(video_files) != len(transcribed_files):
             raise ValueError("Mismatched video and transcription file counts.")
-        
+
         ai_config = self.config.indexing_config
 
         logger.info(
