@@ -7,11 +7,16 @@
 
 import argparse
 import logging
+import os
 import sys
 from typing import Optional
 
 from core.pipeline_models import VideoProcessingConfig
 from core.pipeline_runner import PipelineRunner
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +76,13 @@ def configure_logging(level: int = logging.INFO) -> None:
     """Initialize application logging."""
     logging.basicConfig(level=level, format="[%(levelname)s] %(message)s")
 
+def read_log_level() -> int:
+    log_level = os.getenv("LOG_LEVEL", "WARN")
+    level = logging._nameToLevel.get(log_level, logging.WARN)
+    if level is None or level == logging.NOTSET:
+        level = logging.WARN
+    return level
+
 
 def main(argv: Optional[list[str]] = None) -> int:
     """Main CLI entry point."""
@@ -78,7 +90,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     # Configure logging for the application
-    configure_logging(level=logging.DEBUG)
+    configure_logging(level=read_log_level())
 
     if getattr(args, "status", False):
         return cmd_status(args)
