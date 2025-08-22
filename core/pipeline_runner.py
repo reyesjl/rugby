@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Optional, TypeVar
 
 from core.pipeline_models import VideoProcessingConfig
+from indexing.index_manager import summarize_srt_file, vectorize_and_store_summary
 from ingest.video_finder import find_video_files
 
 # Use module-level logger; logging configured in CLI
@@ -136,14 +137,20 @@ class PipelineRunner:
         pause_with_abort("video conversion", seconds=5)
 
         logger.info("Converting Video Files...")
-        converted_files = time_function(
+        converted_files: list[str] = time_function(
             "Video Conversion", self.convert_videos, all_video_files
         )
 
         # Pause before starting transcription
         pause_with_abort("video transcription", seconds=5)
         logger.info("Transcribing Video Files...")
-        time_function("Video Transcription", self.transcribe_to_srt, converted_files)
+        transcription_files: list[str] = time_function("Video Transcription", self.transcribe_to_srt, converted_files)
+
+        # Pause before starting indexing
+        pause_with_abort("video indexing", seconds=2)
+        logger.info("Indexing Transcribed Files...")
+        time_function("Video Indexing", self.build_index, converted_files, transcription_files)
+        logger.info("Indexing completed successfully.")
 
     def convert_videos(self, video_files: list[str]) -> list[str]:
         """Convert videos using FFmpeg configuration."""
@@ -215,12 +222,16 @@ class PipelineRunner:
 
         return results
 
-    def transcribe_to_srt(self, video_files: list[str]) -> None:
+    def transcribe_to_srt(self, video_files: list[str]) -> list[str]:
         """Transcribe video files to SRT format using Whisper model."""
         transcription_config = self.config.transcription_config
         logger.info(
             f"Transcribing videos to SRT using Whisper model (Size: {transcription_config.model_size}, Language: {transcription_config.language})..."
         )
+
+        #TODO: Need to parallelize, probably should parallelize once in convert videos
+        #       then downstream just inherits?
+        transcribed_files: list[str] = []
 
         def find_source_base(path: str) -> Optional[str]:
             for src in self.config.video_sources.sources:
@@ -281,6 +292,7 @@ class PipelineRunner:
                     capture_output=True,
                 )
                 logger.debug(f"Generated SRT file: {srt_file}")
+                transcribed_files.append(srt_file)
             except FileNotFoundError as e:
                 logger.error(
                     f"Required binary not found while transcribing {video_file}: {e}"
@@ -294,11 +306,33 @@ class PipelineRunner:
                     try:
                         os.remove(audio_file)
                     except OSError:
-                        # Best-effort cleanup
+                        #TODO: Best-effort cleanup
                         pass
 
-    def build_index(self, video_files: list[str]) -> None:
-        """Build searchable index using AI configuration."""
+        return transcribed_files
+
+    def build_index(self, video_files: list[str], transcribed_files: list[str]) -> None:
+        """
+        Build a searchable index from video and transcription files using AI configuration.
+
+        This method processes each transcribed file (typically SRT format), generates a summary using
+        the configured AI provider and model, and then vectorizes and stores the summary alongside the
+        corresponding video file. The resulting index enables efficient semantic search and retrieval
+        of video content based on the generated summaries.
+
+        Note: It is required that the indices of the video_files and transcribed_files lists match.
+
+        Args:
+            video_files (list[str]): List of paths to video files. Must match the order and length of transcribed_files.
+            transcribed_files (list[str]): List of paths to transcription files (e.g., SRT files), one per video.
+
+        Raises:
+            ValueError: If the number of video files and transcription files do not match.
+        """
+
+        if len(video_files) != len(transcribed_files):
+            raise ValueError("Mismatched video and transcription file counts.")
+
         ai_config = self.config.indexing_config
 
         logger.info(
@@ -307,7 +341,10 @@ class PipelineRunner:
         logger.info(f"   Batch size: {ai_config.batch_size}")
 
         # TODO: Implement actual index building
-        pass
+        for i, srt_file in enumerate(transcribed_files):
+            summary = summarize_srt_file(ai_config, srt_file)
+            vectorize_and_store_summary(summary, video_files[i])
+
 
 
 def run_pipeline(config: Any, inputs: Any) -> Any:

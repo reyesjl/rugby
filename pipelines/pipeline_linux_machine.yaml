@@ -6,7 +6,7 @@
 video_processing:
   sources:
     - type: "linux_desktop"
-      path: "./data/raw/videos/test_partition"
+      path: "./data/raw/videos/tester"
       watch_patterns: ["mpg", "mov", "avi", "mkv"]
 
   conversion:
@@ -30,12 +30,21 @@ video_processing:
     model: "gpt-4o-mini"
     batch_size: 10
     prompt_model:
+
       system: |
-        You are a video editor AI. Your job is to generate video sequences from clips based on user requests.
+        You are a highly skilled AI assistant specializing in summarizing rugby training sessions.  
       user: |
         {user_request}
       instructions: |
-        Use the available clips and context to create a sequence plan. Consider narrative flow, pacing, and the user's intent.
+        You are an assistant that summarizes transcripts from rugby training sessions.  
+        The following text is a subtitle transcript extracted from an SRT file.  
+        It may contain timestamps, filler words, or non-relevant chatter.  
+
+        Your task:
+        - Ignore timestamps and irrelevant text.  
+        - Focus only on the rugby training content (coaching instructions, drills, exercises, strategy, and feedback).  
+        - Provide a concise summary of the training session.  
+        - If possible, organize the summary into key drills, strategies, and coaching points.  
       examples:
         - user: "Create a highlight reel of best tackles."
           assistant: "{...example JSON output...}"

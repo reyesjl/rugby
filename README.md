@@ -32,6 +32,42 @@ The pipeline provides end-to-end capabilities for video ingestion, format conver
 pip install -e .
 ```
 
+### Postgres Setup
+
+- sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+- sudo apt update
+- sudo apt install -y postgresql-17 postgresql-contrib-17 postgresql-17-pgvector postgresql-server-dev-17
+- sudo pg_createcluster 17 main --start
+- pg_lsclusters
+  - observe 17 is active
+- sudo systemctl stop postgresql
+- drop old clusters
+- sudo systemctl start postgresql
+- if port is not 5432
+  - sudo vim /etc/postgresql/17/main/postgresql.conf
+  - navigate to port =
+  - change to 5432
+- sudo systemctl restart postgresql
+- psql --version
+  - confirm it is 17
+- run python utilities/createdb.py
+- if you get this error 'connection to server at "localhost" (127.0.0.1), port 5432 failed: FATAL:  password authentication failed for user "postgres"'
+  - sudo vim /etc/postgresql/17/main/pg_hba.conf
+  - Find this line
+    - local   all             postgres                                peer
+  - Change it to
+    - local   all             postgres                                md5
+  - sudo pg_ctlcluster 17 main restart
+  - sudo -u postgres psql
+  - In postgres shell
+    - \password
+    - postgres
+    - postgres
+  - Verify connection works with psql -U postgres
+
+
+
+
 ### Basic Usage
 Create a pipeline configuration file (e.g., `pipeline.yaml`):
 
