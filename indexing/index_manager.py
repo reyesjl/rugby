@@ -14,18 +14,21 @@ import logging
 import os
 
 import psycopg
+from dotenv import load_dotenv
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
 
 from core.pipeline_models import IndexingConfig
 from indexing.srt_parser import load_srt_text
 
-#TODO: Where should these be defined? What should the host be?
-DB_USER="postgres"
-DB_PASS="postgres"
-DB_NAME="videos_db"
-DB_HOST="localhost"
-DB_PORT=5432
+
+# Load environment variables from .env file
+load_dotenv()
+DB_USER: str = os.getenv("DB_USER", "postgres")
+DB_PASS: str = os.getenv("DB_PASS", "postgres")
+DB_NAME: str = os.getenv("DB_NAME", "videos_db")
+DB_HOST: str = os.getenv("DB_HOST", "localhost")
+DB_PORT: int = int(os.getenv("DB_PORT", 5432))
 
 logger = logging.getLogger(__name__)
 

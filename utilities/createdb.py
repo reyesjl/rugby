@@ -3,12 +3,21 @@
 # This file is the sole property of Biasware LLC.
 # Unauthorized use, distribution, or reverse engineering is prohibited.
 
+from dotenv import load_dotenv
 import psycopg
+import os
+
+load_dotenv()
+DB_USER: str = os.getenv("DB_USER", "postgres")
+DB_PASS: str = os.getenv("DB_PASS", "postgres")
+DB_NAME: str = os.getenv("DB_NAME", "videos_db")
+DB_HOST: str = os.getenv("DB_HOST", "localhost")
+DB_PORT: int = int(os.getenv("DB_PORT", 5432))
 
 # ----------------------------
 # 1. Create database if not exists
 # ----------------------------
-conn = psycopg.connect(dbname="postgres", user="postgres", password="postgres", host="localhost", autocommit=True)
+conn = psycopg.connect(dbname="postgres", user=DB_USER, password=DB_PASS, host=DB_HOST, autocommit=True)
 cur = conn.cursor()
 
 db_name = "videos_db"
@@ -27,7 +36,7 @@ conn.close()
 # ----------------------------
 # 2. Connect to the target DB
 # ----------------------------
-conn = psycopg.connect(dbname=db_name, user="postgres", password="postgres", host="localhost", autocommit=True)
+conn = psycopg.connect(dbname=db_name, user=DB_USER, password=DB_PASS, host=DB_HOST, autocommit=True)
 cur = conn.cursor()
 
 # ----------------------------
