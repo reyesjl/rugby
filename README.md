@@ -156,7 +156,7 @@ pip install -e ".[dev]"
 pre-commit install
 
 # Run tests
-pytest
+python ops/run_tests.py
 
 # Code formatting and linting
 ruff check .
