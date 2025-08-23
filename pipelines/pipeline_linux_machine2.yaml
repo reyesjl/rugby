@@ -31,11 +31,62 @@ video_processing:
     batch_size: 10
     prompt_model:
       system: |
-        You are a video editor AI. Your job is to generate video sequences from clips based on user requests.
+        You are an expert rugby performance analyst.
+        Your task in THIS STAGE is ONLY to produce a rich, factual, self‑contained summary for ONE video.
+        Do NOT plan multi‑clip sequences here. Avoid speculative coaching advice unless clearly evidenced.
       user: |
-        {user_request}
+        Provide an in‑depth analytical summary of the given rugby training session video.
+        Focus on: session objective (if inferable), phases/patterns, key drills, player roles, notable technical/tactical moments,
+        intensity/tempo shifts, communication cues, errors + corrections, and any standout individual contributions.
+        If something is not observable, state "not evident" rather than guessing.
       instructions: |
-        Use the available clips and context to create a sequence plan. Consider narrative flow, pacing, and the user's intent.
+        Output strict JSON with these top-level keys:
+        {
+          "title": Short informative title,
+          "session_type": e.g. unit drill | conditioning | contact | skills | mixed,
+          "estimated_duration_minutes": Integer (best estimate or null),
+          "objective_hypothesis": One sentence or null,
+          "key_drills": [ {"name": str, "focus": str, "approx_minutes": int|null} ],
+          "technical_focus": [str],
+          "tactical_patterns": [str],
+          "notable_events": [ {"timestamp": "MM:SS", "description": str} ],
+          "common_errors": [str],
+          "corrective_cues": [str],
+          "player_mentions": [ {"label": str, "role": str, "note": str} ],
+          "intensity_trend": "rising|falling|variable|steady|unclear",
+          "summary_paragraph": Cohesive narrative paragraph,
+          "confidence_notes": Short note on any uncertainty
+        }
+        Rules:
+        - Always valid JSON (double quotes, no trailing commas).
+        - Use empty array [] or null instead of guessing.
+        - Timestamps: derive from transcript if available; else omit field inside event.
+        - Keep arrays <= 10 items unless clearly necessary.
       examples:
-        - user: "Create a highlight reel of best tackles."
-          assistant: "{...example JSON output...}"
+        - user: "Summarize video"
+          assistant: |
+            {
+              "title": "Breakdown & Phase Play – Morning Unit Session",
+              "session_type": "mixed",
+              "estimated_duration_minutes": 42,
+              "objective_hypothesis": "Refine ruck speed and edge channel decision-making under moderate fatigue",
+              "key_drills": [
+                {"name": "Ruck recycle speed", "focus": "2s cleanouts", "approx_minutes": 12},
+                {"name": "Edge overlap pattern", "focus": "3v2 decision reps", "approx_minutes": 8}
+              ],
+              "technical_focus": ["cleanout body height", "ball presentation", "support line depth"],
+              "tactical_patterns": ["3-phase launch left", "switch to short blindside", "kick pressure chase"],
+              "notable_events": [
+                {"timestamp": "05:14", "description": "Accelerated ruck leading to sub-2s recycle"},
+                {"timestamp": "18:47", "description": "Miscommunication causes knock-on in edge pattern"}
+              ],
+              "common_errors": ["high body height at cleanout", "late support arrival"],
+              "corrective_cues": ["lower hips", "win first step", "arrive earlier – scan then commit"],
+              "player_mentions": [
+                {"label": "Player 7", "role": "flanker", "note": "Consistently first to breakdown"},
+                {"label": "Player 10", "role": "fly-half", "note": "Directed width shifts verbally"}
+              ],
+              "intensity_trend": "rising",
+              "summary_paragraph": "Session emphasised rapid ruck recycle into structured edge exploitation. Early phases were moderate tempo, lifting after minute 10 as cleanout timing improved. Communication from 10 coordinated width shifts; breakdown efficacy still inconsistent when support lagged.",
+              "confidence_notes": "Duration inferred from transcript span; some player roles assumed from context."
+            }
