@@ -174,3 +174,35 @@ def test_query_videos_result_limit(mock_vector_model, mock_connect):
 	result = index_manager.query_videos("pass", result_limit=2)
 	# The function just returns all returned by fetchall, so we check that
 	assert result == ["/video1.mp4", "/video2.mp4", "/video3.mp4"]
+
+
+@patch("indexing.index_manager.psycopg.connect")
+def test_video_file_indexed_success(mock_connect):
+	mock_conn = MagicMock()
+	mock_cursor = MagicMock()
+	mock_connect.return_value = mock_conn
+	mock_conn.cursor.return_value = mock_cursor
+	mock_cursor.fetchone.return_value = (True,)
+
+	assert index_manager.video_file_indexed("/path/to/video.mp4") is True
+
+
+@patch("indexing.index_manager.psycopg.connect")
+def test_video_file_indexed_no_match(mock_connect):
+	mock_conn = MagicMock()
+	mock_cursor = MagicMock()
+	mock_connect.return_value = mock_conn
+	mock_conn.cursor.return_value = mock_cursor
+	mock_cursor.fetchone.return_value = (False,)
+
+	assert index_manager.video_file_indexed("/path/to/video.mp4") is False
+
+@patch("indexing.index_manager.psycopg.connect")
+def test_video_file_indexed_no_match_empty(mock_connect):
+	mock_conn = MagicMock()
+	mock_cursor = MagicMock()
+	mock_connect.return_value = mock_conn
+	mock_conn.cursor.return_value = mock_cursor
+	mock_cursor.fetchone.return_value = None
+
+	assert index_manager.video_file_indexed("/path/to/video.mp4") is False

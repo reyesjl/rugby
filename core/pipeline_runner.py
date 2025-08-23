@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Optional, TypeVar
 
 from core.pipeline_models import VideoProcessingConfig
-from indexing.index_manager import summarize_srt_file, vectorize_and_store_summary
+from indexing.index_manager import summarize_srt_file, vectorize_and_store_summary, video_file_indexed
 from ingest.video_finder import find_video_files
 
 # Use module-level logger; logging configured in CLI
@@ -131,6 +131,15 @@ class PipelineRunner:
                 )
 
         logger.info(f"Total video files found: {len(all_video_files)}")
+        # Filter out already indexed files
+        all_video_files = [video_file for video_file in all_video_files if not video_file_indexed(video_file)]
+
+        logger.info(f"Total unique video files found: {len(all_video_files)}")
+        
+        if len(all_video_files) == 0:
+            logger.warning("No new video files found. Aborting pipeline.")
+            return
+
         logger.info("Pipeline ready. Proceeding with discovered video files.")
 
         # Pause before starting conversion
@@ -268,7 +277,6 @@ class PipelineRunner:
             audio_file: Optional[str] = None
             try:
                 audio_file = convert_mp4_to_wav(video_file, output_dir=srt_out_dir)
-                logger.debug(f"Extracting audio to: {audio_file}")
 
                 whisper_cmd = [
                     "whisper",
