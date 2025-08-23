@@ -12,55 +12,13 @@ Vectorizing summaries, storing them in a PostgreSQL database with pgvector, and 
 
 import logging
 import os
-from typing import Any, NoReturn
+from typing import Any, Optional
 
-try:  # psycopg may be absent in minimal test env; provide stub so tests can patch
-    import psycopg  # type: ignore
-except ImportError:  # pragma: no cover - fallback path only for missing dependency
-    import types
-
-    def _missing_psycopg(*_args: object, **_kwargs: object) -> NoReturn:  # noqa: D401
-        raise ImportError(
-            "psycopg not installed; database operations unavailable in test mode"
-        )
-
-    psycopg = types.SimpleNamespace(connect=_missing_psycopg)  # type: ignore
-try:  # optional dependency (tests may omit python-dotenv)
-    from dotenv import load_dotenv  # type: ignore
-except ImportError:  # pragma: no cover
-
-    def load_dotenv(*_args: object, **_kwargs: object) -> bool:  # type: ignore
-        return False
-
-
-try:  # optional dependency: openai
-    from openai import OpenAI  # type: ignore
-except ImportError:  # pragma: no cover
-
-    class OpenAI:  # type: ignore
-        class _Chat:
-            class _Completions:
-                def create(self, *args: object, **kwargs: object) -> object:  # noqa: D401
-                    raise RuntimeError(
-                        "OpenAI SDK not installed; this stub should be patched in tests"
-                    )
-
-            completions = _Completions()
-
-        chat = _Chat()
-
-
-try:  # optional dependency: sentence-transformers
-    from sentence_transformers import SentenceTransformer  # type: ignore
-except ImportError:  # pragma: no cover
-
-    class SentenceTransformer:  # type: ignore
-        def __init__(self, *_args: object, **_kwargs: object) -> None:  # noqa: D401
-            pass
-
-        def encode(self, _text: str) -> list[float]:  # noqa: D401
-            return [0.0]
-
+import psycopg
+from dotenv import load_dotenv
+from openai import OpenAI
+from sentence_transformers import SentenceTransformer
+from torch import Tensor
 
 from core.pipeline_models import IndexingConfig
 from indexing.srt_parser import load_srt_text
@@ -76,20 +34,23 @@ DB_PORT: int = int(os.getenv("DB_PORT", 5432))
 logger = logging.getLogger(__name__)
 
 # TODO: How will we store an open ai key in production?
-try:
-    openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # type: ignore[arg-type]
-except TypeError:  # Stub path: constructor takes no api_key
-    openai_client = OpenAI()  # type: ignore[call-arg]
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # type: ignore[arg-type]
 # Load embedding model (fallback stub returns [0.0])
-try:  # pragma: no cover - success path
-    vector_model = SentenceTransformer("BAAI/bge-small-en")
-except Exception:  # pragma: no cover - offline or missing resources
+vector_model = SentenceTransformer("BAAI/bge-small-en")
 
-    class _StubVectorModel:
-        def encode(self, _text: str) -> list[float]:  # noqa: D401
-            return [0.0]
 
-    vector_model = _StubVectorModel()
+def connect_db() -> Optional[psycopg.Connection]:
+    try:
+        return psycopg.connect(  # type: ignore[attr-defined]
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASS,
+            host=DB_HOST,
+            port=DB_PORT,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("DB unavailable; due to: %s", e)
+        return None
 
 
 def summarize_srt_file(configuration: IndexingConfig, srt_file: str) -> str:
@@ -157,38 +118,17 @@ def vectorize_and_store_summary(summary: str, video_file_path: str) -> None:
         video_file_path (str): The file path of the associated video.
     """
     logger.debug(f"Vectorizing summary for video: {video_file_path}")
-    encoded: Any = vector_model.encode(summary)
-    if hasattr(encoded, "tolist"):
-        try:
-            summary_embedding = encoded.tolist()  # type: ignore[attr-defined]
-        except Exception:  # noqa: BLE001
-            summary_embedding = (
-                list(encoded) if not isinstance(encoded, list) else encoded
-            )
-    elif isinstance(encoded, list):
-        summary_embedding = encoded
-    else:
-        try:
-            summary_embedding = list(encoded)  # type: ignore[arg-type]
-        except TypeError:
-            summary_embedding = [float(encoded)]  # type: ignore[arg-type]
+    try:
+        encoded: Tensor = vector_model.encode(summary)
+    except Exception as e:  # noqa: BLE001
+        logger.error("Failed to encode summary: %s", e)
+        return
 
-    # Lazy helper to tolerate missing DB in test env
-    def _safe_connect() -> Any:  # noqa: D401
-        try:
-            return psycopg.connect(  # type: ignore[attr-defined]
-                dbname=DB_NAME,
-                user=DB_USER,
-                password=DB_PASS,
-                host=DB_HOST,
-                port=DB_PORT,
-            )
-        except Exception as e:  # noqa: BLE001
-            logger.warning("DB unavailable; skipping store: %s", e)
-            return None
+    summary_embedding: list[float] = encoded.tolist()
 
-    conn = _safe_connect()
+    conn: Optional[psycopg.Connection] = connect_db()
     if conn is None:
+        logger.error("DB unavailable; skipping vectorize_and_store")
         return
     cur = conn.cursor()
 
@@ -223,25 +163,16 @@ def query_videos(query: str, result_limit: int = 5) -> list[str]:
         list[str]: List of video file paths ranked by similarity to the query.
     """
     logger.debug(f"Querying videos with query: {query} and limit: {result_limit}")
-    _enc: Any = vector_model.encode(query)
-    if hasattr(_enc, "tolist"):
-        try:
-            query_embedding = _enc.tolist()
-        except Exception:  # noqa: BLE001
-            query_embedding = list(_enc)
-    else:
-        query_embedding = list(_enc)
-
     try:
-        conn = psycopg.connect(  # type: ignore[attr-defined]
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASS,
-            host=DB_HOST,
-            port=DB_PORT,
-        )
+        encoded: Tensor = vector_model.encode(query)
     except Exception as e:  # noqa: BLE001
-        logger.warning("DB unavailable; skipping query: %s", e)
+        logger.error("Failed to encode summary: %s", e)
+        return []
+    query_embedding: list[float] = encoded.tolist()
+
+    conn: Optional[psycopg.Connection] = connect_db()
+    if conn is None:
+        logger.error("DB unavailable; skipping query_videos")
         return []
     cur = conn.cursor()
 
@@ -275,16 +206,9 @@ def video_file_indexed(file_path: str) -> bool:
     Returns:
         bool: True if the video is indexed, False otherwise.
     """
-    try:
-        conn = psycopg.connect(  # type: ignore[attr-defined]
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASS,
-            host=DB_HOST,
-            port=DB_PORT,
-        )
-    except Exception as e:  # noqa: BLE001
-        logger.warning("DB unavailable; treating %s as not indexed: %s", file_path, e)
+    conn: Optional[psycopg.Connection] = connect_db()
+    if conn is None:
+        logger.error("DB unavailable; treating %s as not indexed", file_path)
         return False
     cur = conn.cursor()
 

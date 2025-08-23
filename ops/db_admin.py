@@ -30,16 +30,9 @@ import sys
 from typing import Any
 
 import psycopg
+from dotenv import load_dotenv
 from psycopg import sql
 from psycopg.errors import DuplicateDatabase, InsufficientPrivilege, UndefinedObject
-
-try:  # optional dependency
-    from dotenv import load_dotenv  # type: ignore
-except ImportError:  # pragma: no cover
-
-    def load_dotenv(*_a, **_k):  # type: ignore
-        return False
-
 
 load_dotenv()
 

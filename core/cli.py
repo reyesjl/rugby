@@ -11,13 +11,7 @@ import os
 import sys
 from typing import Optional
 
-try:  # Allow running in minimal test environment without python-dotenv installed
-    from dotenv import load_dotenv  # type: ignore
-except ImportError:  # pragma: no cover
-
-    def load_dotenv(*_args, **_kwargs):  # type: ignore
-        return False
-
+from dotenv import load_dotenv  # type: ignore
 
 from core.pipeline_models import VideoProcessingConfig
 from core.pipeline_runner import PipelineRunner

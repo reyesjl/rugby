@@ -23,19 +23,8 @@ import os
 import sys
 from typing import Any
 
-try:  # psycopg should exist in runtime; fallback for test mode
-    import psycopg  # type: ignore
-except ImportError:  # pragma: no cover
-    psycopg = None  # type: ignore
-
-# Load .env so DB_* vars resolve like rest of project
-try:  # optional dependency
-    from dotenv import load_dotenv  # type: ignore
-except ImportError:  # pragma: no cover
-
-    def load_dotenv(*_a: object, **_k: object) -> bool:  # type: ignore
-        return False
-
+import psycopg
+from dotenv import load_dotenv
 
 load_dotenv()
 
