@@ -3,9 +3,10 @@
 # This file is the sole property of Biasware LLC.
 # Unauthorized use, distribution, or reverse engineering is prohibited.
 
-from dotenv import load_dotenv
-import psycopg
 import os
+
+import psycopg
+from dotenv import load_dotenv
 
 load_dotenv()
 DB_USER: str = os.getenv("DB_USER", "postgres")

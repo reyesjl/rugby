@@ -11,10 +11,10 @@ import os
 import sys
 from typing import Optional
 
+from dotenv import load_dotenv
+
 from core.pipeline_models import VideoProcessingConfig
 from core.pipeline_runner import PipelineRunner
-
-from dotenv import load_dotenv
 
 load_dotenv()
 

@@ -21,7 +21,6 @@ from sentence_transformers import SentenceTransformer
 from core.pipeline_models import IndexingConfig
 from indexing.srt_parser import load_srt_text
 
-
 # Load environment variables from .env file
 load_dotenv()
 DB_USER: str = os.getenv("DB_USER", "postgres")
