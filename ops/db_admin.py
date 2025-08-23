@@ -1,3 +1,8 @@
+# Copyright (c) 2025 Biasware LLC
+# Proprietary and Confidential. All Rights Reserved.
+# This file is the sole property of Biasware LLC.
+# Unauthorized use, distribution, or reverse engineering is prohibited.
+
 """Database administration script (bootstrap + purge) for the vector videos DB.
 
 Renamed from createdb.py per ticket: adds richer CLI and purge support.

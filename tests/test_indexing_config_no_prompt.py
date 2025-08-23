@@ -1,3 +1,8 @@
+# Copyright (c) 2025 Biasware LLC
+# Proprietary and Confidential. All Rights Reserved.
+# This file is the sole property of Biasware LLC.
+# Unauthorized use, distribution, or reverse engineering is prohibited.
+
 """Cover IndexingConfig __str__ branch with no prompt model values."""
 
 from core.pipeline_models import IndexingConfig

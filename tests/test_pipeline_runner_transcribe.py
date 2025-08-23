@@ -1,3 +1,8 @@
+# Copyright (c) 2025 Biasware LLC
+# Proprietary and Confidential. All Rights Reserved.
+# This file is the sole property of Biasware LLC.
+# Unauthorized use, distribution, or reverse engineering is prohibited.
+
 """Focused tests for PipelineRunner.transcribe_to_srt pathing and robustness."""
 
 from unittest.mock import MagicMock, patch
