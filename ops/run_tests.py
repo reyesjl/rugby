@@ -124,6 +124,12 @@ def run_test_file(test_file: str) -> list[TestResult]:
             self._level_override: Optional[int] = None
 
         def emit(self, record: logging.LogRecord) -> None:  # type: ignore[override]
+            # Ensure 'message' attribute is present (mimic logging.makeLogRecord behavior)
+            if not hasattr(record, "message"):
+                try:
+                    record.message = record.getMessage()  # type: ignore[attr-defined]
+                except Exception:  # pragma: no cover - defensive
+                    record.message = record.msg  # type: ignore[attr-defined]
             self.records.append(record)
 
         @property

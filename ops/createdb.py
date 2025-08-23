@@ -43,7 +43,15 @@ import sys
 from typing import Any
 
 import psycopg
-from dotenv import load_dotenv
+
+try:  # optional dependency in some test environments
+    from dotenv import load_dotenv  # type: ignore
+except ImportError:  # pragma: no cover
+
+    def load_dotenv(*_args, **_kwargs):  # type: ignore
+        return False
+
+
 from psycopg import sql
 from psycopg.errors import (
     DuplicateDatabase,

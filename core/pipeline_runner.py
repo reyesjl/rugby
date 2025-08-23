@@ -51,7 +51,8 @@ def pause_with_abort(stage: str, seconds: int = 10) -> None:
         stage: Human-friendly stage name for logs.
         seconds: Seconds to wait before auto-continue.
     """
-    seconds = max(0, 0)
+    # Respect caller-provided seconds but clamp to >=0
+    seconds = max(0, seconds)
     if seconds == 0:
         return
     logger.info(
@@ -297,6 +298,12 @@ class PipelineRunner:
                 srt_file = video_file.rsplit(".", 1)[0] + ".srt"
 
             os.makedirs(srt_out_dir, exist_ok=True)
+
+            # Skip if transcript already exists (idempotent / resume support)
+            if os.path.exists(srt_file):
+                logger.info(f"Skipping transcription (already exists): {srt_file}")
+                transcribed_files.append(srt_file)
+                continue
 
             audio_file: Optional[str] = None
             try:
