@@ -26,6 +26,27 @@ def make_indexing_config(
     )
 
 
+@patch("indexing.index_manager.psycopg.connect")
+def test_connect_db_success(mock_connect):
+    mock_conn = MagicMock()
+    mock_connect.return_value = mock_conn
+    from indexing import index_manager
+
+    conn = index_manager.connect_db()
+    assert conn == mock_conn
+    mock_connect.assert_called_once()
+
+
+@patch("indexing.index_manager.psycopg.connect")
+def test_connect_db_failure(mock_connect):
+    mock_connect.side_effect = Exception("Connection error")
+    from indexing import index_manager
+
+    conn = index_manager.connect_db()
+    assert conn is None
+    mock_connect.assert_called_once()
+
+
 @patch("indexing.index_manager.openai_client")
 @patch("indexing.index_manager.load_srt_text")
 def test_summarize_srt_file_success(mock_load_srt, mock_openai):
