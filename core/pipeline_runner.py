@@ -11,7 +11,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Optional, TypeVar
 
 from core.pipeline_models import VideoProcessingConfig
-from indexing.index_manager import summarize_srt_file, vectorize_and_store_summary, video_file_indexed
+from indexing.index_manager import (
+    summarize_srt_file,
+    vectorize_and_store_summary,
+    video_file_indexed,
+)
 from ingest.video_finder import find_video_files
 
 # Use module-level logger; logging configured in CLI
@@ -135,7 +139,7 @@ class PipelineRunner:
         all_video_files = [video_file for video_file in all_video_files if not video_file_indexed(video_file)]
 
         logger.info(f"Total unique video files found: {len(all_video_files)}")
-        
+
         if len(all_video_files) == 0:
             logger.warning("No new video files found. Aborting pipeline.")
             return
