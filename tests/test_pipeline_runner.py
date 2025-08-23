@@ -7,6 +7,8 @@
 import subprocess
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from core.pipeline_models import VideoProcessingConfig
 from core.pipeline_runner import PipelineRunner
 
@@ -91,8 +93,11 @@ def test_run_pipeline(mock_convert, mock_find):
     mock_convert.assert_called()
 
 
-def test_build_index_stub():
+def test_build_index_mismatch():
     config = VideoProcessingConfig(minimal_config())
     runner = PipelineRunner(config)
-    # Should not raise, just pass
-    runner.build_index(["/videos/test1.mp4"])
+    # Simulate a mismatch in video and transcription files
+    video_files = ["/videos/test1.mp4"]
+    transcription_files = []
+    with pytest.raises(ValueError, match="Mismatched video and transcription file counts"):
+        runner.build_index(video_files, transcription_files)

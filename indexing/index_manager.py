@@ -164,3 +164,36 @@ def query_videos(query: str, result_limit: int = 5) -> list[str]:
     conn.close()
 
     return paths
+
+
+def video_file_indexed(file_path: str) -> bool:
+    """
+    Checks if a video file has already been indexed in the database.
+
+    Args:
+        file_path (str): The file path of the video to check.
+
+    Returns:
+        bool: True if the video is indexed, False otherwise.
+    """
+    conn = psycopg.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASS,
+        host=DB_HOST,
+        port=DB_PORT,
+    )
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT EXISTS(SELECT 1 FROM videos WHERE path = %s)",
+        (file_path,)
+    )
+    row = cur.fetchone()
+    exists = row[0] if row is not None else False
+    logger.debug(f"Video file indexed check for {file_path}: {exists}")
+
+    cur.close()
+    conn.close()
+
+    return exists
