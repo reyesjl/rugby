@@ -99,5 +99,7 @@ def test_build_index_mismatch():
     # Simulate a mismatch in video and transcription files
     video_files = ["/videos/test1.mp4"]
     transcription_files = []
-    with pytest.raises(ValueError, match="Mismatched video and transcription file counts"):
+    with pytest.raises(
+        ValueError, match="Mismatched video and transcription file counts"
+    ):
         runner.build_index(video_files, transcription_files)
