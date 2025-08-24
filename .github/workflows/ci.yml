@@ -41,47 +41,62 @@ jobs:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # 6. Run tests with pytest, coverage, and JUnit XML report
-    - name: Run tests with pytest + coverage
-      run: |
-        pytest --cov=. --cov-report=xml --junitxml=report.xml
-      continue-on-error: true
-      env:
-        OPENAI_API_KEY: "test-key"
-
-    # 7. Upload test results to show in Pull Request
-    - name: Upload test results to PR
-      uses: dorny/test-reporter@v2
-      with:
-        name: pytest
-        path: report.xml
-        reporter: jest-junit
-
-
-    # - id: run-tests
-    #   uses: JotaFan/pycoverage@v1.0.0
-    #   with:
-    #     requirements-file: dev-requirements.txt
-    #     cov-omit-list: tests/*
-    #     cov-threshold-single: 50
-    #     cov-threshold-total: 70
-    #     async-tests: true
-    #     github_token: ${{ secrets.github_token }}
-    #     working_branch: ${{ steps.extract_branch.outputs.branch }}
+    # # 6. Run tests with pytest, coverage, and JUnit XML report
+    # - name: Run tests with pytest + coverage
+    #   run: |
+    #     pytest --cov=. --cov-report=xml --junitxml=report.xml
+    #   continue-on-error: true
     #   env:
     #     OPENAI_API_KEY: "test-key"
 
-    - name: Upload test results to PR
-      uses: dorny/test-reporter@v2
-      with:
-        name: pytest-coverage
-        path: coverage.xml
-        reporter: jest-junit
-        output: summary
+    # Run tests normally (job fails on pytest failure)
+    - name: Run pytest with coverage + junitxml
+      id: pytest
+      run: |
+        set -o pipefail
+        pytest --junitxml=pytest.xml \
+              --cov=. \
+              --cov-report=xml:coverage.xml \
+              --cov-report=term-missing 2>&1 | tee pytest-coverage.txt
+      env:
+        OPENAI_API_KEY: "test-key"
 
-    # 8. Upload coverage report as artifact
-    - name: Upload coverage report
-      uses: actions/upload-artifact@v4
+    # Post coverage comment even if tests failed
+    - name: Post coverage comment
+      if: ${{ always() }}
+      uses: MishaKav/pytest-coverage-comment@v1
       with:
-        name: coverage-report
-        path: coverage.xml
+        pytest-coverage-path: ./pytest-coverage.txt
+        pytest-xml-coverage-path: ./coverage.xml
+        junitxml-path: ./pytest.xml
+
+    # Publish JUnit results into GitHub UI
+    - name: Publish Test Report
+      if: ${{ always() }}
+      uses: mikepenz/action-junit-report@v4
+      with:
+        report_paths: 'pytest.xml'
+
+
+    # 7. Upload test results to show in Pull Request
+    # - name: Upload test results to PR
+    #   uses: dorny/test-reporter@v2
+    #   with:
+    #     name: pytest
+    #     path: report.xml
+    #     reporter: jest-junit
+
+    # - name: Upload test results to PR
+    #   uses: dorny/test-reporter@v2
+    #   with:
+    #     name: pytest-coverage
+    #     path: coverage.xml
+    #     reporter: jest-junit
+    #     output: summary
+
+    # # 8. Upload coverage report as artifact
+    # - name: Upload coverage report
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: coverage-report
+    #     path: coverage.xml
