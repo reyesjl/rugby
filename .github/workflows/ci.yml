@@ -1,0 +1,55 @@
+# .github/workflows/ci.yml
+name: Python CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Checkout code
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2. Setup Python 3.12.11
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12.11
+
+    # 3. Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest flake8 pytest-cov dorny-test-reporter reviewdog
+
+    # 4. Lint with flake8 and annotate PR
+    - name: Lint with flake8 + reviewdog
+      run: |
+        flake8 . --format=default | reviewdog -f=flake8 -name="flake8" -reporter=github-pr-check -level=error
+
+    # 5. Run tests with coverage and JUnit XML report
+    - name: Run tests with pytest + coverage
+      run: |
+        pytest --cov=. --cov-report=xml --junitxml=report.xml
+
+    # 6. Upload test results as PR annotations
+    - name: Upload test results to PR
+      uses: dorny/test-reporter@v1
+      with:
+        name: pytest
+        path: report.xml
+        reporter: github-pr-check
+
+    # 7. Upload coverage report as artifact
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: coverage.xml
