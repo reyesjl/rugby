@@ -50,6 +50,7 @@ jobs:
 
     # 7. Upload test results to show in Pull Request
     - name: Upload test results to PR
+      if: steps.run_tests.conclusion == 'success' || steps.run_tests.conclusion == 'failure'
       uses: dorny/test-reporter@v1
       with:
         name: pytest
