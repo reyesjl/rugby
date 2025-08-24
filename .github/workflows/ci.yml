@@ -51,11 +51,11 @@ jobs:
 
     # 7. Upload test results to show in Pull Request
     - name: Upload test results to PR
-      uses: dorny/test-reporter@v1.9.1
+      uses: dorny/test-reporter@v2
       with:
         name: pytest
         path: report.xml
-        reporter: github-action-summary
+        reporter: jest-junit
 
     # 8. Upload coverage report as artifact
     - name: Upload coverage report
