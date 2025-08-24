@@ -55,7 +55,7 @@ jobs:
       with:
         name: pytest
         path: report.xml
-        reporter: github-pr-check
+        reporter: github-pr-review
 
     # 8. Upload coverage report as artifact
     - name: Upload coverage report
