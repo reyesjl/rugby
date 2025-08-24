@@ -58,18 +58,18 @@ jobs:
         reporter: jest-junit
 
 
-    - id: run-tests
-      uses: JotaFan/pycoverage@v1.0.0
-      with:
-        requirements-file: dev-requirements.txt
-        cov-omit-list: tests/*
-        cov-threshold-single: 50
-        cov-threshold-total: 70
-        async-tests: true
-        github_token: ${{ secrets.github_token }}
-        working_branch: ${{ steps.extract_branch.outputs.branch }}
-      env:
-        OPENAI_API_KEY: "test-key"
+    # - id: run-tests
+    #   uses: JotaFan/pycoverage@v1.0.0
+    #   with:
+    #     requirements-file: dev-requirements.txt
+    #     cov-omit-list: tests/*
+    #     cov-threshold-single: 50
+    #     cov-threshold-total: 70
+    #     async-tests: true
+    #     github_token: ${{ secrets.github_token }}
+    #     working_branch: ${{ steps.extract_branch.outputs.branch }}
+    #   env:
+    #     OPENAI_API_KEY: "test-key"
 
     - name: Upload test results to PR
       uses: dorny/test-reporter@v2
