@@ -11,7 +11,7 @@ import os
 import sys
 from typing import Optional
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # type: ignore
 
 from core.pipeline_models import VideoProcessingConfig
 from core.pipeline_runner import PipelineRunner
@@ -75,6 +75,7 @@ def load_yaml(config_path: str) -> None:
 def configure_logging(level: int = logging.INFO) -> None:
     """Initialize application logging."""
     logging.basicConfig(level=level, format="[%(levelname)s] %(message)s")
+
 
 def read_log_level() -> int:
     log_level = os.getenv("LOG_LEVEL", "WARN")

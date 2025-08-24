@@ -51,7 +51,8 @@ def pause_with_abort(stage: str, seconds: int = 10) -> None:
         stage: Human-friendly stage name for logs.
         seconds: Seconds to wait before auto-continue.
     """
-    seconds = max(0, int(seconds))
+    # Respect caller-provided seconds but clamp to >=0
+    seconds = max(0, seconds)
     if seconds == 0:
         return
     logger.info(
@@ -136,7 +137,11 @@ class PipelineRunner:
 
         logger.info(f"Total video files found: {len(all_video_files)}")
         # Filter out already indexed files
-        all_video_files = [video_file for video_file in all_video_files if not video_file_indexed(video_file)]
+        all_video_files = [
+            video_file
+            for video_file in all_video_files
+            if not video_file_indexed(video_file)
+        ]
 
         logger.info(f"Total unique video files found: {len(all_video_files)}")
 
@@ -147,7 +152,7 @@ class PipelineRunner:
         logger.info("Pipeline ready. Proceeding with discovered video files.")
 
         # Pause before starting conversion
-        pause_with_abort("video conversion", seconds=5)
+        pause_with_abort("video conversion", seconds=2)
 
         logger.info("Converting Video Files...")
         converted_files: list[str] = time_function(
@@ -155,14 +160,30 @@ class PipelineRunner:
         )
 
         # Pause before starting transcription
-        pause_with_abort("video transcription", seconds=5)
+        pause_with_abort("video transcription", seconds=2)
         logger.info("Transcribing Video Files...")
-        transcription_files: list[str] = time_function("Video Transcription", self.transcribe_to_srt, converted_files)
+        transcription_files = time_function(
+            "Video Transcription", self.transcribe_to_srt, converted_files
+        )
+        # Normalize None -> [] for robustness (tests may stub to None)
+        if transcription_files is None:  # type: ignore
+            transcription_files = []  # type: ignore
+
+        # Only proceed to indexing if we have a 1:1 mapping
+        if len(converted_files) != len(transcription_files):  # type: ignore[arg-type]
+            logger.warning(
+                "Skipping indexing: converted=%d transcribed=%d (mismatch)",
+                len(converted_files),
+                len(transcription_files),
+            )
+            return
 
         # Pause before starting indexing
         pause_with_abort("video indexing", seconds=2)
         logger.info("Indexing Transcribed Files...")
-        time_function("Video Indexing", self.build_index, converted_files, transcription_files)
+        time_function(
+            "Video Indexing", self.build_index, converted_files, transcription_files
+        )  # type: ignore[arg-type]
         logger.info("Indexing completed successfully.")
 
     def convert_videos(self, video_files: list[str]) -> list[str]:
@@ -242,7 +263,7 @@ class PipelineRunner:
             f"Transcribing videos to SRT using Whisper model (Size: {transcription_config.model_size}, Language: {transcription_config.language})..."
         )
 
-        #TODO: Need to parallelize, probably should parallelize once in convert videos
+        # TODO: Need to parallelize, probably should parallelize once in convert videos
         #       then downstream just inherits?
         transcribed_files: list[str] = []
 
@@ -277,6 +298,12 @@ class PipelineRunner:
                 srt_file = video_file.rsplit(".", 1)[0] + ".srt"
 
             os.makedirs(srt_out_dir, exist_ok=True)
+
+            # Skip if transcript already exists (idempotent / resume support)
+            if os.path.exists(srt_file):
+                logger.info(f"Skipping transcription (already exists): {srt_file}")
+                transcribed_files.append(srt_file)
+                continue
 
             audio_file: Optional[str] = None
             try:
@@ -318,7 +345,7 @@ class PipelineRunner:
                     try:
                         os.remove(audio_file)
                     except OSError:
-                        #TODO: Best-effort cleanup
+                        # TODO: Best-effort cleanup
                         pass
 
         return transcribed_files
@@ -356,7 +383,6 @@ class PipelineRunner:
         for i, srt_file in enumerate(transcribed_files):
             summary = summarize_srt_file(ai_config, srt_file)
             vectorize_and_store_summary(summary, video_files[i])
-
 
 
 def run_pipeline(config: Any, inputs: Any) -> Any:
