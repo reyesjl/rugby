@@ -45,6 +45,8 @@ jobs:
     - name: Run tests with pytest + coverage
       run: |
         pytest --cov=. --cov-report=xml --junitxml=report.xml
+      env:
+        OPENAI_API_KEY: "test-key"
 
     # 7. Upload test results to show in Pull Request
     - name: Upload test results to PR

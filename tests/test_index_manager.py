@@ -13,7 +13,7 @@ from indexing import index_manager
 
 # ruff: noqa
 def test_failure():
-    assert False == True
+    assert False == True  # noqa
 
 
 def make_indexing_config(
