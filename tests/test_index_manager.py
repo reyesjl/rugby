@@ -11,6 +11,11 @@ from core.pipeline_models import IndexingConfig
 from indexing import index_manager
 
 
+# ruff: noqa
+def test_failure():
+    assert False == True
+
+
 def make_indexing_config(
     ai_provider="openai",
     model="gpt-3.5-turbo",
