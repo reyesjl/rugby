@@ -52,19 +52,10 @@ jobs:
     # 7. Upload test results to show in Pull Request
     - name: Upload test results to PR
       uses: dorny/test-reporter@v2
-      if: always()
       with:
         name: pytest
         path: report.xml
         reporter: java-junit
-        output: summary
-
-    - name: Comment PR with test results
-      if: always() && github.event_name == 'pull_request' && steps.test-report.outputs.summary
-      uses: peter-evans/create-or-update-comment@v3
-      with:
-        issue-number: ${{ github.event.pull_request.number }}
-        body: ${{ steps.test-report.outputs.summary }}
 
     # 8. Upload coverage report as artifact
     - name: Upload coverage report
