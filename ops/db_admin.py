@@ -8,8 +8,8 @@
 Renamed from createdb.py per ticket: adds richer CLI and purge support.
 
 Actions:
-    purge (default):     Remove schema objects (table + dependent indexes) ONLY.
-    bootstrap:           Ensure database objects (extension, table, indexes) exist.
+    purge    :    Remove schema objects (table + dependent indexes) ONLY.
+    bootstrap:    Ensure database objects (extension, table, indexes) exist.
 
 Purging strategy (scope=schema):
   * Drops `videos` table (cascades dependent indexes) if present.
@@ -17,7 +17,7 @@ Purging strategy (scope=schema):
   * Optional --recreate flag immediately re-runs bootstrap after purge.
 
 Safety:
-    * THIS DEFAULT IS DESTRUCTIVE: running with no arguments purges the schema.
+    * By Default, an action must be specified to ensure transparency.
     * Use --action bootstrap to create/restore schema.
     * Dry-run always shows intended actions w/o changes.
 
@@ -275,8 +275,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     p.add_argument(
         "--action",
         choices=["bootstrap", "purge"],
-        default="purge",
-        help="Action to perform (default: purge)",
+        required=True,
+        help="Action to perform",
     )
     p.add_argument("--dry-run", action="store_true", help="Show intended actions only")
     p.add_argument(
@@ -288,7 +288,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = parse_args(argv or sys.argv[1:])
+    args: argparse.Namespace = parse_args(argv or sys.argv[1:])
     dry_run: bool = args.dry_run
     action: str = args.action
     try:
