@@ -56,13 +56,26 @@ jobs:
         name: pytest
         path: report.xml
         reporter: jest-junit
-        output: summary
 
-    - name: Comment PR with test results
-      uses: peter-evans/create-or-update-comment@v3
+
+    - id: run-tests
+      uses: JotaFan/pycoverage@v1.0.0
       with:
-        issue-number: ${{ github.event.pull_request.number }}
-        body: ${{ steps.test-report.outputs.summary }}
+        cov-omit-list: tests/*
+        cov-threshold-single: 50
+        cov-threshold-total: 70
+        async-tests: true
+        package-extras: dev,tests
+        github_token: ${{ secrets.github_token }}
+        working_branch: ${{ steps.extract_branch.outputs.branch }}
+
+    - name: Upload test results to PR
+      uses: dorny/test-reporter@v2
+      with:
+        name: pytest-coverage
+        path: coverage.xml
+        reporter: jest-junit
+        output: summary
 
     # 8. Upload coverage report as artifact
     - name: Upload coverage report
