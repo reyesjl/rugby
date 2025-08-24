@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Checkout code
+    # 1. Checkout repository
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -22,24 +22,31 @@ jobs:
       with:
         python-version: 3.12.11
 
-    # 3. Install dependencies
+    # 3. Install Python dependencies
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r dev-requirements.txt
-        pip install pytest flake8 pytest-cov reviewdog
+        pip install -r requirements.txt
+        pip install pytest flake8 pytest-cov
 
-    # 4. Lint with flake8 and annotate PR
+    # 4. Install reviewdog CLI (for inline PR lint annotations)
+    - name: Install reviewdog
+      uses: reviewdog/action-setup@v1
+      with:
+        version: latest
+
+    # 5. Lint with flake8 and annotate PR
     - name: Lint with flake8 + reviewdog
-      run: |
-        flake8 . --format=default | reviewdog -f=flake8 -name="flake8" -reporter=github-pr-check -level=error
+      run: flake8 . --format=default | reviewdog -f=flake8 -name="flake8" -reporter=github-pr-check -level=error
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # 5. Run tests with coverage and JUnit XML report
+    # 6. Run tests with pytest, coverage, and JUnit XML report
     - name: Run tests with pytest + coverage
       run: |
         pytest --cov=. --cov-report=xml --junitxml=report.xml
 
-    # 6. Upload test results as PR annotations
+    # 7. Upload test results to show in Pull Request
     - name: Upload test results to PR
       uses: dorny/test-reporter@v1
       with:
@@ -47,7 +54,7 @@ jobs:
         path: report.xml
         reporter: github-pr-check
 
-    # 7. Upload coverage report as artifact
+    # 8. Upload coverage report as artifact
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
       with:
