@@ -61,11 +61,12 @@ jobs:
     - id: run-tests
       uses: JotaFan/pycoverage@v1.0.0
       with:
+        requirements-file: dev-requirements.txt
         cov-omit-list: tests/*
         cov-threshold-single: 50
         cov-threshold-total: 70
         async-tests: true
-        package-extras: dev,tests
+        package-extras: dev-requirements.txt
         github_token: ${{ secrets.github_token }}
         working_branch: ${{ steps.extract_branch.outputs.branch }}
 
