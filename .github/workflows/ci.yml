@@ -56,6 +56,14 @@ jobs:
         name: pytest
         path: report.xml
         reporter: java-junit
+        output: summary
+
+    - name: Comment PR with test results
+      if: github.event_name == 'pull_request' && steps.test-report.outputs.summary
+      uses: peter-evans/create-or-update-comment@v3
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: ${{ steps.test-report.outputs.summary }}
 
     # 8. Upload coverage report as artifact
     - name: Upload coverage report
