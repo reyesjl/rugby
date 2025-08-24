@@ -52,6 +52,7 @@ jobs:
     # 7. Upload test results to show in Pull Request
     - name: Upload test results to PR
       uses: dorny/test-reporter@v2
+      if: always()
       with:
         name: pytest
         path: report.xml
@@ -59,7 +60,7 @@ jobs:
         output: summary
 
     - name: Comment PR with test results
-      if: github.event_name == 'pull_request' && steps.test-report.outputs.summary
+      if: always() && github.event_name == 'pull_request' && steps.test-report.outputs.summary
       uses: peter-evans/create-or-update-comment@v3
       with:
         issue-number: ${{ github.event.pull_request.number }}
