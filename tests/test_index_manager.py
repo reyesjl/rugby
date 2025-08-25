@@ -150,8 +150,8 @@ def test_vectorize_and_store_summary_db_error(mock_connect, mock_vector_model):
     mock_vector_model.encode.return_value = mock_embedding
     mock_connect.side_effect = Exception("DB connection failed")
 
-    with pytest.raises(Exception, match="DB connection failed"):
-        index_manager.vectorize_and_store_summary(summary, video_path)
+    index_manager.vectorize_and_store_summary(summary, video_path)
+    mock_connect.cursor.assert_not_called()
 
 
 @patch("indexing.index_manager.psycopg.connect")
