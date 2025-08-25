@@ -115,7 +115,7 @@ def test_vectorize_and_store_summary_success(mock_connect, mock_vector_model):
     mock_connect.assert_called_once()
     mock_conn.cursor.assert_called_once()
     mock_cursor.execute.assert_called_once()
-    # Check that the SQL command matches the expected INSERT statement, ignoring whitespace
+    # Check that the SQL command matches the expected INSERT statement.
     actual_sql = mock_cursor.execute.call_args[0][0]
     expected_sql = """
         INSERT INTO videos (summary, path, embedding)

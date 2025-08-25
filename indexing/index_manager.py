@@ -35,7 +35,8 @@ logger = logging.getLogger(__name__)
 
 # TODO: How will we store an open ai key in production?
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # type: ignore[arg-type]
-# TODO: Evaluate different model options. This is still decent, but there are faster ones with reduced semantic quality.
+# TODO: Evaluate different model options. This is still decent,
+#       but there are faster ones with reduced semantic quality.
 vector_model = SentenceTransformer("BAAI/bge-small-en")
 
 
