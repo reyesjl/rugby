@@ -35,7 +35,8 @@ logger = logging.getLogger(__name__)
 
 # TODO: How will we store an open ai key in production?
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # type: ignore[arg-type]
-# Load embedding model (fallback stub returns [0.0])
+# TODO: Evaluate different model options. This is still decent,
+#       but there are faster ones with reduced semantic quality.
 vector_model = SentenceTransformer("BAAI/bge-small-en")
 
 
@@ -151,7 +152,7 @@ def vectorize_and_store_summary(summary: str, video_file_path: str) -> None:
     logger.debug(f"Vectorized summary for video: {video_file_path}")
 
 
-def query_videos(query: str, result_limit: int = 5) -> list[str]:
+def query_videos(query: str, result_limit: int = 5) -> tuple[list[str], list[str]]:
     """
     Queries the database for videos most semantically similar to the input query using vector search.
 
@@ -160,20 +161,21 @@ def query_videos(query: str, result_limit: int = 5) -> list[str]:
         result_limit (int): Maximum number of results to return.
 
     Returns:
-        list[str]: List of video file paths ranked by similarity to the query.
+        Tuple[list[str], list[str]]: A tuple containing two lists
+            the first with video summaries and the second with their file paths.
     """
     logger.debug(f"Querying videos with query: {query} and limit: {result_limit}")
     try:
         encoded: Tensor = vector_model.encode(query)
     except Exception as e:  # noqa: BLE001
         logger.error("Failed to encode summary: %s", e)
-        return []
+        return ([], [])
     query_embedding: list[float] = encoded.tolist()
 
     conn: Optional[psycopg.Connection] = connect_db()
     if conn is None:
         logger.error("DB unavailable; skipping query_videos")
-        return []
+        return ([], [])
     cur = conn.cursor()
 
     cur.execute(
@@ -186,6 +188,7 @@ def query_videos(query: str, result_limit: int = 5) -> list[str]:
     )
 
     results = cur.fetchall()
+    summaries = [result[1] for result in results]
     paths = [result[2] for result in results]
 
     logger.debug(f"Found {len(paths)} videos matching query: {query}")
@@ -193,7 +196,7 @@ def query_videos(query: str, result_limit: int = 5) -> list[str]:
     cur.close()
     conn.close()
 
-    return paths
+    return (summaries, paths)
 
 
 def video_file_indexed(file_path: str) -> bool:
