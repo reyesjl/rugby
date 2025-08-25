@@ -1,0 +1,28 @@
+{
+  "name": "rugby-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "engines": {
+    "node": ">=14.17.0 <19"
+  },
+  "dependencies": {
+    "next": "12.3.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "18.19.39",
+    "@types/react": "18.2.22",
+    "@types/react-dom": "18.2.7",
+    "eslint": "8.57.0",
+    "eslint-config-next": "12.3.4",
+    "typescript": "5.4.5"
+  }
+}

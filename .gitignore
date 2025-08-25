@@ -167,3 +167,14 @@ $RECYCLE.BIN/
 .docker/
 
 **/*Zone.Identifier
+
+# Node / Next.js (frontend project)
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+frontend/.env.local
+frontend/.env*.local
+frontend/out/
+
+auto-install-peers=true

@@ -13,7 +13,10 @@ app = FastAPI()
 # Add middleware for vue frontend<->backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # vue frontend
+    allow_origins=[
+        "http://localhost:5173",  # existing vue frontend (if still used)
+        "http://localhost:3000",  # Next.js frontend
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
