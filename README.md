@@ -1,4 +1,5 @@
 # Rugby Pipeline
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/reyesjl/rugby)
 
 A comprehensive Python-based video processing system designed for rugby video analysis and content management.
 The pipeline provides end-to-end capabilities for video ingestion, format conversion, AI-powered transcription and indexing, and searchable content generation.
@@ -25,7 +26,6 @@ The pipeline provides end-to-end capabilities for video ingestion, format conver
 
 ---
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/reyesjl/rugby)
 
 ## Quick Start
 
