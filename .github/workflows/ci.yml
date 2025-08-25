@@ -69,6 +69,8 @@ jobs:
         pytest-coverage-path: ./pytest-coverage.txt
         pytest-xml-coverage-path: ./coverage.xml
         junitxml-path: ./pytest.xml
+      env:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     # Publish JUnit results into GitHub UI
     - name: Publish Test Report
