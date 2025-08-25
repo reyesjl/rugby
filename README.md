@@ -25,6 +25,8 @@ The pipeline provides end-to-end capabilities for video ingestion, format conver
 
 ---
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/reyesjl/rugby)
+
 ## Quick Start
 
 ### Installation
