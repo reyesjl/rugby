@@ -1,3 +1,8 @@
+# Copyright (c) 2025 Biasware LLC
+# Proprietary and Confidential. All Rights Reserved.
+# This file is the sole property of Biasware LLC.
+# Unauthorized use, distribution, or reverse engineering is prohibited.
+
 """Smoke test ops.apply_license_headers.main to ensure it runs without errors."""
 
 from ops import apply_license_headers as alh

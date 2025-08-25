@@ -1,0 +1,109 @@
+# .github/workflows/ci.yml
+name: Python CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  checks: write
+  pull-requests: write
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Checkout repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2. Setup Python 3.12.11
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12.11
+
+    # 3. Install Python dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r dev-requirements.txt
+        pip install pytest flake8 pytest-cov
+
+    # 4. Install reviewdog CLI (for inline PR lint annotations)
+    - name: Install reviewdog
+      uses: reviewdog/action-setup@v1
+      with:
+        version: latest
+
+    # 5. Lint with flake8 and annotate PR
+    - name: Lint with flake8 + reviewdog
+      run: flake8 . --format=default | reviewdog -f=flake8 -name="flake8" -reporter=github-pr-check -level=error
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # # 6. Run tests with pytest, coverage, and JUnit XML report
+    # - name: Run tests with pytest + coverage
+    #   run: |
+    #     pytest --cov=. --cov-report=xml --junitxml=report.xml
+    #   continue-on-error: true
+    #   env:
+    #     OPENAI_API_KEY: "test-key"
+
+    # Run tests normally (job fails on pytest failure)
+    - name: Run pytest with coverage + junitxml
+      id: pytest
+      run: |
+        set -o pipefail
+        pytest --junitxml=pytest.xml \
+              --cov=. \
+              --cov-report=xml:coverage.xml \
+              --cov-report=term-missing 2>&1 | tee pytest-coverage.txt
+      env:
+        OPENAI_API_KEY: "test-key"
+
+    # Post coverage comment even if tests failed
+    - name: Post coverage comment
+      if: ${{ always() }}
+      uses: MishaKav/pytest-coverage-comment@v1
+      with:
+        pytest-coverage-path: ./pytest-coverage.txt
+        pytest-xml-coverage-path: ./coverage.xml
+        junitxml-path: ./pytest.xml
+      env:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    # Publish JUnit results into GitHub UI
+    - name: Publish Test Report
+      if: ${{ always() }}
+      uses: mikepenz/action-junit-report@v4
+      with:
+        report_paths: 'pytest.xml'
+
+
+    # 7. Upload test results to show in Pull Request
+    # - name: Upload test results to PR
+    #   uses: dorny/test-reporter@v2
+    #   with:
+    #     name: pytest
+    #     path: report.xml
+    #     reporter: jest-junit
+
+    # - name: Upload test results to PR
+    #   uses: dorny/test-reporter@v2
+    #   with:
+    #     name: pytest-coverage
+    #     path: coverage.xml
+    #     reporter: jest-junit
+    #     output: summary
+
+    # # 8. Upload coverage report as artifact
+    # - name: Upload coverage report
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: coverage-report
+    #     path: coverage.xml

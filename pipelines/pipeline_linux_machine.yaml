@@ -32,19 +32,19 @@ video_processing:
     prompt_model:
 
       system: |
-        You are a highly skilled AI assistant specializing in summarizing rugby training sessions.  
+        You are a highly skilled AI assistant specializing in summarizing rugby training sessions.
       user: |
         {user_request}
       instructions: |
-        You are an assistant that summarizes transcripts from rugby training sessions.  
-        The following text is a subtitle transcript extracted from an SRT file.  
-        It may contain timestamps, filler words, or non-relevant chatter.  
+        You are an assistant that summarizes transcripts from rugby training sessions.
+        The following text is a subtitle transcript extracted from an SRT file.
+        It may contain timestamps, filler words, or non-relevant chatter.
 
         Your task:
-        - Ignore timestamps and irrelevant text.  
-        - Focus only on the rugby training content (coaching instructions, drills, exercises, strategy, and feedback).  
-        - Provide a concise summary of the training session.  
-        - If possible, organize the summary into key drills, strategies, and coaching points.  
+        - Ignore timestamps and irrelevant text.
+        - Focus only on the rugby training content (coaching instructions, drills, exercises, strategy, and feedback).
+        - Provide a concise summary of the training session.
+        - If possible, organize the summary into key drills, strategies, and coaching points.
       examples:
         - user: "Create a highlight reel of best tackles."
           assistant: "{...example JSON output...}"

@@ -12,11 +12,13 @@ Vectorizing summaries, storing them in a PostgreSQL database with pgvector, and 
 
 import logging
 import os
+from typing import Any, Optional
 
 import psycopg
 from dotenv import load_dotenv
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
+from torch import Tensor
 
 from core.pipeline_models import IndexingConfig
 from indexing.srt_parser import load_srt_text
@@ -32,9 +34,23 @@ DB_PORT: int = int(os.getenv("DB_PORT", 5432))
 logger = logging.getLogger(__name__)
 
 # TODO: How will we store an open ai key in production?
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # type: ignore[arg-type]
 # TODO: Evaluate different model options. This is still decent, but there are faster ones with reduced semantic quality.
 vector_model = SentenceTransformer("BAAI/bge-small-en")
+
+
+def connect_db() -> Optional[psycopg.Connection]:
+    try:
+        return psycopg.connect(  # type: ignore[attr-defined]
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASS,
+            host=DB_HOST,
+            port=DB_PORT,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("DB unavailable; due to: %s", e)
+        return None
 
 
 def summarize_srt_file(configuration: IndexingConfig, srt_file: str) -> str:
@@ -68,7 +84,8 @@ def summarize_srt_file(configuration: IndexingConfig, srt_file: str) -> str:
     {transcript}
     """
     model = configuration.model
-    response = openai_client.chat.completions.create(
+    # Treat response as Any to avoid strict SDK typing dependency
+    response: Any = openai_client.chat.completions.create(
         model=model,
         messages=[
             {"role": "system", "content": f"{configuration.prompt_model.system}"},
@@ -79,21 +96,17 @@ def summarize_srt_file(configuration: IndexingConfig, srt_file: str) -> str:
         else 0.3,  # GPT5 no longer supports temperature besides 1
     )
 
-    if (
-        not response.choices
-        or len(response.choices) == 0
-        or not response.choices[0].message.content
-    ):
+    if not getattr(response, "choices", None):
         raise ValueError("No response from OpenAI API")
 
-    summary = response.choices[0].message.content.strip()
+    summary = response.choices[0].message.content.strip()  # type: ignore[index]
     if not summary:
         raise ValueError("Empty summary returned from OpenAI API")
 
     logger.debug("Summary generated")
     logger.debug(f"Summary: {summary}")
 
-    return response.choices[0].message.content
+    return summary
 
 
 def vectorize_and_store_summary(summary: str, video_file_path: str) -> None:
@@ -105,24 +118,29 @@ def vectorize_and_store_summary(summary: str, video_file_path: str) -> None:
         video_file_path (str): The file path of the associated video.
     """
     logger.debug(f"Vectorizing summary for video: {video_file_path}")
-    summary_embedding: list = vector_model.encode(summary).tolist()
+    try:
+        encoded: Tensor = vector_model.encode(summary)
+    except Exception as e:  # noqa: BLE001
+        logger.error("Failed to encode summary: %s", e)
+        return
 
-    conn = psycopg.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASS,
-        host=DB_HOST,
-        port=DB_PORT,
-    )
+    summary_embedding: list[float] = encoded.tolist()
+
+    conn: Optional[psycopg.Connection] = connect_db()
+    if conn is None:
+        logger.error("DB unavailable; skipping vectorize_and_store")
+        return
     cur = conn.cursor()
 
-    # TODO: How should we handle duplicates? The embedding will be different
-    #       and the summary may differ slightly as well
-    # Insert record with vector
+    # Idempotent upsert on unique (path). We overwrite summary + embedding so that
+    # reprocessing (e.g. model improvements) refreshes the stored representation.
     cur.execute(
         """
         INSERT INTO videos (summary, path, embedding)
         VALUES (%s, %s, %s)
+        ON CONFLICT (path) DO UPDATE
+          SET summary = EXCLUDED.summary,
+              embedding = EXCLUDED.embedding
         """,
         (summary, video_file_path, summary_embedding),
     )
@@ -146,11 +164,17 @@ def query_videos(query: str, result_limit: int = 5) -> tuple[list[str], list[str
             the first with video summaries and the second with their file paths.
     """
     logger.debug(f"Querying videos with query: {query} and limit: {result_limit}")
-    query_embedding = vector_model.encode(query).tolist()
+    try:
+        encoded: Tensor = vector_model.encode(query)
+    except Exception as e:  # noqa: BLE001
+        logger.error("Failed to encode summary: %s", e)
+        return ([], [])
+    query_embedding: list[float] = encoded.tolist()
 
-    conn = psycopg.connect(
-        "dbname=videos_db user=postgres password=postgres host=localhost"
-    )
+    conn: Optional[psycopg.Connection] = connect_db()
+    if conn is None:
+        logger.error("DB unavailable; skipping query_videos")
+        return ([], [])
     cur = conn.cursor()
 
     cur.execute(
@@ -184,13 +208,10 @@ def video_file_indexed(file_path: str) -> bool:
     Returns:
         bool: True if the video is indexed, False otherwise.
     """
-    conn = psycopg.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASS,
-        host=DB_HOST,
-        port=DB_PORT,
-    )
+    conn: Optional[psycopg.Connection] = connect_db()
+    if conn is None:
+        logger.error("DB unavailable; treating %s as not indexed", file_path)
+        return False
     cur = conn.cursor()
 
     cur.execute("SELECT EXISTS(SELECT 1 FROM videos WHERE path = %s)", (file_path,))

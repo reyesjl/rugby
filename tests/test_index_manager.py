@@ -26,6 +26,27 @@ def make_indexing_config(
     )
 
 
+@patch("indexing.index_manager.psycopg.connect")
+def test_connect_db_success(mock_connect):
+    mock_conn = MagicMock()
+    mock_connect.return_value = mock_conn
+    from indexing import index_manager
+
+    conn = index_manager.connect_db()
+    assert conn == mock_conn
+    mock_connect.assert_called_once()
+
+
+@patch("indexing.index_manager.psycopg.connect")
+def test_connect_db_failure(mock_connect):
+    mock_connect.side_effect = Exception("Connection error")
+    from indexing import index_manager
+
+    conn = index_manager.connect_db()
+    assert conn is None
+    mock_connect.assert_called_once()
+
+
 @patch("indexing.index_manager.openai_client")
 @patch("indexing.index_manager.load_srt_text")
 def test_summarize_srt_file_success(mock_load_srt, mock_openai):
@@ -75,9 +96,6 @@ def test_summarize_srt_file_unsupported_provider():
         index_manager.summarize_srt_file(config, "dummy.srt")
 
 
-# Tests for vectorize_and_store_summary
-
-
 @patch("indexing.index_manager.vector_model")
 @patch("indexing.index_manager.psycopg.connect")
 def test_vectorize_and_store_summary_success(mock_connect, mock_vector_model):
@@ -100,16 +118,23 @@ def test_vectorize_and_store_summary_success(mock_connect, mock_vector_model):
     # Check that the SQL command matches the expected INSERT statement, ignoring whitespace
     actual_sql = mock_cursor.execute.call_args[0][0]
     expected_sql = """
-		INSERT INTO videos (summary, path, embedding)
-		VALUES (%s, %s, %s)
-		"""
+        INSERT INTO videos (summary, path, embedding)
+        VALUES (%s, %s, %s)
+        ON CONFLICT (path) DO UPDATE
+            SET summary = EXCLUDED.summary,
+                embedding = EXCLUDED.embedding
+        """
 
-    def normalize_sql(sql):
+    def normalize_sql(sql: str) -> str:
         return " ".join(sql.split())
 
     # Need to normalize due to whitespace differences
     assert normalize_sql(actual_sql) == normalize_sql(expected_sql)
-    assert mock_cursor.execute.call_args[0][1] == (summary, video_path, [0.1, 0.2, 0.3])
+    assert mock_cursor.execute.call_args[0][1] == (
+        summary,
+        video_path,
+        [0.1, 0.2, 0.3],
+    )
     mock_conn.commit.assert_called_once()
     mock_cursor.close.assert_called_once()
     mock_conn.close.assert_called_once()
@@ -178,7 +203,6 @@ def test_video_file_indexed_success(mock_connect):
     mock_connect.return_value = mock_conn
     mock_conn.cursor.return_value = mock_cursor
     mock_cursor.fetchone.return_value = (True,)
-
     assert index_manager.video_file_indexed("/path/to/video.mp4") is True
 
 
@@ -189,7 +213,6 @@ def test_video_file_indexed_no_match(mock_connect):
     mock_connect.return_value = mock_conn
     mock_conn.cursor.return_value = mock_cursor
     mock_cursor.fetchone.return_value = (False,)
-
     assert index_manager.video_file_indexed("/path/to/video.mp4") is False
 
 
@@ -200,5 +223,4 @@ def test_video_file_indexed_no_match_empty(mock_connect):
     mock_connect.return_value = mock_conn
     mock_conn.cursor.return_value = mock_cursor
     mock_cursor.fetchone.return_value = None
-
     assert index_manager.video_file_indexed("/path/to/video.mp4") is False
